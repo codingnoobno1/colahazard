@@ -1,0 +1,34 @@
+@page "/login/factory"
+@using PackTrack.Components.Layout
+@layout LandingLayout
+
+<PageTitle>Factory Login - PackSight</PageTitle>
+
+<div class="d-flex justify-center align-center" style="height: 100vh; background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);">
+    <MudContainer MaxWidth="MaxWidth.Small">
+        <MudCard Elevation="25" Class="rounded-xl pa-8" Style="backdrop-filter: blur(10px); background: rgba(255,255,255,0.95);">
+             <div class="d-flex flex-column align-center mb-8">
+                <MudAvatar Color="Color.Error" Size="Size.Large" Style="height: 90px; width: 90px; font-size: 3rem;" Class="mb-4 shadow-lg">🏭</MudAvatar>
+                <MudText Typo="Typo.h4" Style="font-weight: 800; color: #D32F2F;">Factory Access</MudText>
+                <MudText Typo="Typo.subtitle1" Color="Color.Secondary" Style="font-weight: 500;">Hindustan Beverages Production</MudText>
+            </div>
+            
+            <MudForm>
+                <MudTextField T="string" Label="Factory ID" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Badge" Class="mb-4" />
+                 <MudTextField T="string" Label="Batch Code" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.QrCode" Class="mb-6" />
+                
+                <MudButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Large" FullWidth="true" Class="py-3 rounded-lg shadow-md" Href="/dashboard" Style="font-weight: bold;">
+                    Initialize Production
+                </MudButton>
+            </MudForm>
+            
+             <MudDivider Class="my-6"/>
+            
+            <div class="d-flex justify-center">
+                 <MudLink Href="/roles" Color="Color.Dark" Underline="Underline.Hover" Class="d-flex align-center gap-1">
+                    <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Size="Size.Small"/> Change Role
+                </MudLink>
+            </div>
+        </MudCard>
+    </MudContainer>
+</div>

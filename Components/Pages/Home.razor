@@ -1,0 +1,104 @@
+﻿@page "/"
+@using PackTrack.Components.Layout
+@layout LandingLayout
+
+<PageTitle>PackSight - Smart Packaging Lifecycle Intelligence</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="d-flex flex-column align-center justify-center py-16" Style="min-height: 80vh;">
+    <MudText Typo="Typo.h1" Align="Align.Center" GutterBottom="true" Color="Color.Primary" Style="font-weight: 900;">
+        PackSight
+    </MudText>
+    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Class="mb-8" Color="Color.Secondary">
+        Smart Packaging Lifecycle Intelligence
+    </MudText>
+    <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-12" Style="max-width: 800px;">
+        Track bottles from factory creation to consumer recycling in real-time with our advanced lifecycle management system.
+    </MudText>
+    
+    <MudButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Large" Href="/roles" Class="py-4 px-12 rounded-lg">
+        Start Tracking
+    </MudButton>
+</MudContainer>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-16">
+    <MudGrid Spacing="6" Justify="Justify.Center">
+        <!-- Stat 1 -->
+        <MudItem xs="12" md="4">
+            <MudPaper Elevation="4" Class="pa-8 d-flex flex-column align-center justify-center gap-4 rounded-xl" Style="height: 100%;">
+                <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Large" Color="Color.Primary" Style="font-size: 3rem;" />
+                <MudText Typo="Typo.h3" Color="Color.Success" Style="font-weight: bold;">89%</MudText>
+                <MudText Typo="Typo.h6">Recovery Rate</MudText>
+            </MudPaper>
+        </MudItem>
+        <!-- Stat 2 -->
+        <MudItem xs="12" md="4">
+            <MudPaper Elevation="4" Class="pa-8 d-flex flex-column align-center justify-center gap-4 rounded-xl" Style="height: 100%;">
+                <MudIcon Icon="@Icons.Material.Filled.Public" Size="Size.Large" Color="Color.Info" Style="font-size: 3rem;" />
+                <MudText Typo="Typo.h3" Color="Color.Info" Style="font-weight: bold;">1.2M+</MudText>
+                <MudText Typo="Typo.h6">Bottles Tracked Live</MudText>
+            </MudPaper>
+        </MudItem>
+        <!-- Stat 3 -->
+        <MudItem xs="12" md="4">
+            <MudPaper Elevation="4" Class="pa-8 d-flex flex-column align-center justify-center gap-4 rounded-xl" Style="height: 100%;">
+                <MudIcon Icon="@Icons.Material.Filled.Recycling" Size="Size.Large" Color="Color.Warning" Style="font-size: 3rem;" />
+                <MudText Typo="Typo.h3" Color="Color.Warning" Style="font-weight: bold;">-450kg</MudText>
+                <MudText Typo="Typo.h6">CO2 Offset Today</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-16">
+    <MudText Typo="Typo.h3" Align="Align.Center" Class="mb-12">The Lifecycle Journey</MudText>
+    <MudTimeline TimelineOrientation="TimelineOrientation.Horizontal" TimelinePosition="TimelinePosition.Bottom">
+        <MudTimelineItem Color="Color.Error" Variant="Variant.Filled">
+            <ItemContent>
+                <MudPaper Elevation="3" Class="pa-4">
+                    <MudText Typo="Typo.h6">Factory</MudText>
+                    <MudText Typo="Typo.body2">Bottles produced & tagged</MudText>
+                </MudPaper>
+            </ItemContent>
+            <ItemOpposite>
+                <MudIcon Icon="@Icons.Material.Filled.Factory" Color="Color.Error" />
+            </ItemOpposite>
+        </MudTimelineItem>
+        <MudTimelineItem Color="Color.Warning" Variant="Variant.Filled">
+            <ItemContent>
+                <MudPaper Elevation="3" Class="pa-4">
+                    <MudText Typo="Typo.h6">Logistics</MudText>
+                    <MudText Typo="Typo.body2">Real-time transit tracking</MudText>
+                </MudPaper>
+            </ItemContent>
+            <ItemOpposite>
+                <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Color="Color.Warning" />
+            </ItemOpposite>
+        </MudTimelineItem>
+        <MudTimelineItem Color="Color.Info" Variant="Variant.Filled">
+            <ItemContent>
+                <MudPaper Elevation="3" Class="pa-4">
+                    <MudText Typo="Typo.h6">Retail</MudText>
+                    <MudText Typo="Typo.body2">Consumer purchase</MudText>
+                </MudPaper>
+            </ItemContent>
+            <ItemOpposite>
+                <MudIcon Icon="@Icons.Material.Filled.Store" Color="Color.Info" />
+            </ItemOpposite>
+        </MudTimelineItem>
+        <MudTimelineItem Color="Color.Success" Variant="Variant.Filled">
+            <ItemContent>
+                <MudPaper Elevation="3" Class="pa-4">
+                    <MudText Typo="Typo.h6">Recycle</MudText>
+                    <MudText Typo="Typo.body2">Closed loop recovery</MudText>
+                </MudPaper>
+            </ItemContent>
+            <ItemOpposite>
+                <MudIcon Icon="@Icons.Material.Filled.Recycling" Color="Color.Success" />
+            </ItemOpposite>
+        </MudTimelineItem>
+    </MudTimeline>
+</MudContainer>
+
+<MudPaper Class="d-flex justify-center py-8 absolute bottom-0 w-100" Elevation="0" Square="true" Style="background-color: #f5f5f5;">
+    <MudText Typo="Typo.body2" Color="Color.Default">© 2026 PackSight Inc. All rights reserved.</MudText>
+</MudPaper>

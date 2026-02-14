@@ -1,0 +1,71 @@
+@page "/roles"
+@using PackTrack.Components.Layout
+@layout LandingLayout
+
+<PageTitle>Choose Your Role - PackSight</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-16">
+    <MudText Typo="Typo.h3" Align="Align.Center" Class="mb-4" Color="Color.Primary" Style="font-weight: bold;">Select Your Role</MudText>
+    <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-12" Color="Color.Secondary">Access your specific dashboard to track the lifecycle from production to recycling.</MudText>
+    
+    <MudGrid Justify="Justify.Center" Spacing="4">
+        <!-- Factory -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="4" Class="d-flex flex-column align-center pa-8 hover-scale" Style="height: 100%; cursor: pointer;" onclick="location.href='/login/factory'">
+                <MudAvatar Color="Color.Error" Variant="Variant.Filled" Size="Size.Large" Class="mb-4" Style="width: 80px; height: 80px; font-size: 3rem;">🏭</MudAvatar>
+                <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-2">Factory</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="mb-6">Hindustan Beverages Associate</MudText>
+                <MudButton Variant="Variant.Outlined" Color="Color.Error" EndIcon="@Icons.Material.Filled.ArrowForward">Login</MudButton>
+            </MudCard>
+        </MudItem>
+        
+        <!-- Transport -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="4" Class="d-flex flex-column align-center pa-8 hover-scale" Style="height: 100%; cursor: pointer;" onclick="location.href='/login/transport'">
+                <MudAvatar Color="Color.Warning" Variant="Variant.Filled" Size="Size.Large" Class="mb-4" Style="width: 80px; height: 80px; font-size: 3rem;">🚚</MudAvatar>
+                <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-2">Transport</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="mb-6">Logistics & Fleet Management</MudText>
+                <MudButton Variant="Variant.Outlined" Color="Color.Warning" EndIcon="@Icons.Material.Filled.ArrowForward">Login</MudButton>
+            </MudCard>
+        </MudItem>
+        
+        <!-- Wholesaler -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="4" Class="d-flex flex-column align-center pa-8 hover-scale" Style="height: 100%; cursor: pointer;" onclick="location.href='/login/wholesaler'">
+                <MudAvatar Color="Color.Info" Variant="Variant.Filled" Size="Size.Large" Class="mb-4" Style="width: 80px; height: 80px; font-size: 3rem;">🏪</MudAvatar>
+                <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-2">Wholesaler</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="mb-6">Bulk Distribution Center</MudText>
+                <MudButton Variant="Variant.Outlined" Color="Color.Info" EndIcon="@Icons.Material.Filled.ArrowForward">Login</MudButton>
+            </MudCard>
+        </MudItem>
+
+        <!-- Retail -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="4" Class="d-flex flex-column align-center pa-8 hover-scale" Style="height: 100%; cursor: pointer;" onclick="location.href='/login/retail'">
+                <MudAvatar Color="Color.Success" Variant="Variant.Filled" Size="Size.Large" Class="mb-4" Style="width: 80px; height: 80px; font-size: 3rem;">🛍️</MudAvatar>
+                <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-2">Retail</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="mb-6">Store Inventory & Sales</MudText>
+                <MudButton Variant="Variant.Outlined" Color="Color.Success" EndIcon="@Icons.Material.Filled.ArrowForward">Login</MudButton>
+            </MudCard>
+        </MudItem>
+        
+        <!-- Event -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="4" Class="d-flex flex-column align-center pa-8 hover-scale" Style="height: 100%; cursor: pointer;" onclick="location.href='/login/event'">
+                <MudAvatar Color="Color.Secondary" Variant="Variant.Filled" Size="Size.Large" Class="mb-4" Style="width: 80px; height: 80px; font-size: 3rem;">🎉</MudAvatar>
+                <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-2">Event / Bulk</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="mb-6">Weddings & Large Events</MudText>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" EndIcon="@Icons.Material.Filled.ArrowForward">Login</MudButton>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<style>
+    .hover-scale {
+        transition: transform 0.2s;
+    }
+    .hover-scale:hover {
+        transform: scale(1.03);
+    }
+</style>

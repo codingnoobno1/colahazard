@@ -1,0 +1,39 @@
+@page "/login/transport"
+@using PackTrack.Components.Layout
+@layout LandingLayout
+
+<PageTitle>Transport Login - PackSight</PageTitle>
+
+<div class="d-flex justify-center align-center" style="height: 100vh; background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);">
+    <MudContainer MaxWidth="MaxWidth.Small">
+        <MudCard Elevation="25" Class="rounded-xl pa-8" Style="backdrop-filter: blur(10px); background: rgba(255,255,255,0.95);">
+             <div class="d-flex flex-column align-center mb-8">
+                <MudAvatar Color="Color.Warning" Size="Size.Large" Style="height: 90px; width: 90px; font-size: 3rem;" Class="mb-4 shadow-lg">🚚</MudAvatar>
+                <MudText Typo="Typo.h4" Style="font-weight: 800; color: #F57F17;">Transport Portal</MudText>
+                <MudText Typo="Typo.subtitle1" Color="Color.Secondary" Style="font-weight: 500;">Logistics & Fleet Partner</MudText>
+            </div>
+            
+            <MudForm>
+                <MudTextField T="string" Label="Truck Number" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.LocalShipping" Class="mb-4" />
+                <MudTextField T="string" Label="Driver Name" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Person" Class="mb-4" />
+                <MudSelect T="string" Label="Assigned Route" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="mb-6" AdornmentIcon="@Icons.Material.Filled.Map">
+                    <MudSelectItem Value="@("Route A")">Route A: Delhi - Chandigarh</MudSelectItem>
+                    <MudSelectItem Value="@("Route B")">Route B: Mumbai - Pune</MudSelectItem>
+                    <MudSelectItem Value="@("Route C")">Route C: Bangalore - Mysore</MudSelectItem>
+                </MudSelect>
+                
+                <MudButton Variant="Variant.Filled" Color="Color.Warning" Size="Size.Large" FullWidth="true" Class="py-3 rounded-lg shadow-md" Href="/dashboard" Style="font-weight: bold; color: black;">
+                    Start Route
+                </MudButton>
+            </MudForm>
+            
+             <MudDivider Class="my-6"/>
+            
+            <div class="d-flex justify-center">
+                 <MudLink Href="/roles" Color="Color.Dark" Underline="Underline.Hover" Class="d-flex align-center gap-1">
+                    <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Size="Size.Small"/> Change Role
+                </MudLink>
+            </div>
+        </MudCard>
+    </MudContainer>
+</div>

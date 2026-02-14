@@ -1,0 +1,35 @@
+@page "/login/event"
+@using PackTrack.Components.Layout
+@layout LandingLayout
+
+<PageTitle>Event Login - PackSight</PageTitle>
+
+<div class="d-flex justify-center align-center" style="height: 100vh; background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%);">
+    <MudContainer MaxWidth="MaxWidth.Small">
+        <MudCard Elevation="25" Class="rounded-xl pa-8" Style="backdrop-filter: blur(10px); background: rgba(255,255,255,0.95);">
+             <div class="d-flex flex-column align-center mb-8">
+                <MudAvatar Color="Color.Secondary" Size="Size.Large" Style="height: 90px; width: 90px; font-size: 3rem;" Class="mb-4 shadow-lg">🎉</MudAvatar>
+                <MudText Typo="Typo.h4" Style="font-weight: 800; color: #7B1FA2;">Event Login</MudText>
+                <MudText Typo="Typo.subtitle1" Color="Color.Secondary" Style="font-weight: 500;">Weddings & Bulk Orders</MudText>
+            </div>
+            
+            <MudForm>
+                <MudTextField T="string" Label="Event Name" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Event" Class="mb-4" />
+                <MudTextField T="string" Label="Location" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.PinDrop" Class="mb-4" />
+                <MudTextField T="int?" Label="Expected Count" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Numbers" Class="mb-6" />
+                
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Large" FullWidth="true" Class="py-3 rounded-lg shadow-md" Href="/dashboard" Style="font-weight: bold;">
+                    Manage Event
+                </MudButton>
+            </MudForm>
+            
+             <MudDivider Class="my-6"/>
+            
+            <div class="d-flex justify-center">
+                 <MudLink Href="/roles" Color="Color.Dark" Underline="Underline.Hover" Class="d-flex align-center gap-1">
+                    <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Size="Size.Small"/> Change Role
+                </MudLink>
+            </div>
+        </MudCard>
+    </MudContainer>
+</div>
