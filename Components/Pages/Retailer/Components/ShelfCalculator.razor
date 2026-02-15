@@ -1,0 +1,65 @@
+<MudCard Class="pa-4 glass-panel h-100">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Shelf Space Calculator</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudGrid>
+            <MudItem xs="6">
+                <MudNumericField @bind-Value="ShelfWidth" Label="Width (cm)" Variant="Variant.Outlined" Min="0" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudNumericField @bind-Value="ShelfDepth" Label="Depth (cm)" Variant="Variant.Outlined" Min="0" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudSelect T="string" Label="Bottle Type" @bind-Value="SelectedBottleType" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@("Thick")">Thick (8cm dia)</MudSelectItem>
+                    <MudSelectItem Value="@("Thin")">Thin (6cm dia)</MudSelectItem>
+                    <MudSelectItem Value="@("rPET")">rPET (7cm dia)</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="Calculate" Class="mt-4" FullWidth="true">Calculate Capacity</MudButton>
+
+        @if (Capacity > 0)
+        {
+            <MudAlert Severity="Severity.Info" Class="mt-4">
+                Max Capacity: <strong>@Capacity bottles</strong><br />
+                Efficiency: @Efficiency%
+            </MudAlert>
+        }
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private double ShelfWidth { get; set; }
+    private double ShelfDepth { get; set; }
+    private string SelectedBottleType { get; set; } = "Thick";
+    private int Capacity { get; set; }
+    private double Efficiency { get; set; }
+
+    private void Calculate()
+    {
+        double diameter = SelectedBottleType switch
+        {
+            "Thick" => 8,
+            "Thin" => 6,
+            "rPET" => 7,
+            _ => 8
+        };
+
+        if (ShelfWidth > 0 && ShelfDepth > 0)
+        {
+            int cols = (int)(ShelfWidth / diameter);
+            int rows = (int)(ShelfDepth / diameter);
+            Capacity = cols * rows;
+            
+            // Simple area efficiency calc
+            double usedArea = Capacity * (Math.PI * Math.Pow(diameter / 2, 2));
+            double totalArea = ShelfWidth * ShelfDepth;
+            Efficiency = Math.Round((usedArea / totalArea) * 100, 1);
+        }
+    }
+}

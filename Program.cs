@@ -8,6 +8,17 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddMudServices();
 
+// RIS Services
+builder.Services.AddSingleton<PackTrack.Data.LiteDbContext>();
+builder.Services.AddScoped<PackTrack.Data.Repositories.InventoryRepository>();
+builder.Services.AddScoped<PackTrack.Data.Repositories.RackRepository>();
+builder.Services.AddScoped<PackTrack.Data.Repositories.InvoiceRepository>();
+builder.Services.AddScoped<PackTrack.Services.InventoryService>();
+builder.Services.AddScoped<PackTrack.Services.RackService>();
+builder.Services.AddScoped<PackTrack.Services.InvoiceService>();
+builder.Services.AddScoped<PackTrack.Services.PredictionService>();
+builder.Services.AddScoped<PackTrack.Services.OcrService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

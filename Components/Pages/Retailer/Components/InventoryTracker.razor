@@ -1,0 +1,77 @@
+@inject InventoryService InventoryService
+
+<MudCard Class="pa-4 glass-panel h-100">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Real-time Inventory</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudList T="string">
+            <MudListItem>
+                <div class="d-flex justify-space-between align-center">
+                    <MudText>Thick Bottles</MudText>
+                    <div class="d-flex align-center gap-2">
+                        <MudIconButton Icon="@Icons.Material.Filled.Remove" Size="Size.Small" OnClick="@(() => UpdateStock("Thick", -1))" />
+                        <MudText Style="font-weight: bold; min-width: 30px; text-align: center;">@StockThick</MudText>
+                        <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="@(() => UpdateStock("Thick", 1))" />
+                    </div>
+                </div>
+                <MudProgressLinear Color="Color.Primary" Value="@(StockThick % 100)" Class="my-2" />
+            </MudListItem>
+            
+            <MudListItem>
+                <div class="d-flex justify-space-between align-center">
+                    <MudText>Thin Bottles</MudText>
+                    <div class="d-flex align-center gap-2">
+                         <MudIconButton Icon="@Icons.Material.Filled.Remove" Size="Size.Small" OnClick="@(() => UpdateStock("Thin", -1))" />
+                        <MudText Style="font-weight: bold; min-width: 30px; text-align: center;">@StockThin</MudText>
+                         <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="@(() => UpdateStock("Thin", 1))" />
+                    </div>
+                </div>
+                <MudProgressLinear Color="Color.Info" Value="@(StockThin % 100)" Class="my-2" />
+            </MudListItem>
+
+            <MudListItem>
+                <div class="d-flex justify-space-between align-center">
+                    <MudText>rPET Bottles</MudText>
+                    <div class="d-flex align-center gap-2">
+                         <MudIconButton Icon="@Icons.Material.Filled.Remove" Size="Size.Small" OnClick="@(() => UpdateStock("rPET", -1))" />
+                        <MudText Style="font-weight: bold; min-width: 30px; text-align: center;">@StockRpet</MudText>
+                         <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="@(() => UpdateStock("rPET", 1))" />
+                    </div>
+                </div>
+                <MudProgressLinear Color="Color.Success" Value="@(StockRpet % 100)" Class="my-2" />
+            </MudListItem>
+        </MudList>
+        
+        <MudDivider Class="my-4"/>
+        
+        <MudTextField T="string" Label="Assign to Rack #" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Inventory" />
+        
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private int StockThick { get; set; }
+    private int StockThin { get; set; }
+    private int StockRpet { get; set; }
+
+    protected override void OnInitialized()
+    {
+        RefreshStock();
+    }
+
+    private void RefreshStock()
+    {
+        StockThick = InventoryService.GetStock("Thick");
+        StockThin = InventoryService.GetStock("Thin");
+        StockRpet = InventoryService.GetStock("rPET");
+    }
+
+    private void UpdateStock(string type, int change)
+    {
+        InventoryService.AdjustStock(type, change);
+        RefreshStock();
+    }
+}

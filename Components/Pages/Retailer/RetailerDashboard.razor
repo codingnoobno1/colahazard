@@ -1,0 +1,105 @@
+@page "/retailer/dashboard"
+@using PackTrack.Components.Layout
+@using PackTrack.Components.Pages.Retailer.Components
+@layout LandingLayout
+
+<PageTitle>Retailer Dashboard - PackSight</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-8">
+    <div class="d-flex justify-space-between align-center mb-8">
+        <div>
+            <MudText Typo="Typo.h4" Style="font-weight: 700;">Retailer Dashboard</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Manage inventory, shelf space, and stock tracking.</MudText>
+        </div>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="NavigateBack">Back to Roles</MudButton>
+    </div>
+
+    <MudGrid Spacing="4">
+        <!-- Overview Stats -->
+        <MudItem xs="12">
+@inject InventoryService InventoryService
+@inject PredictionService PredictionService
+
+<MudPaper Class="pa-6 glass-panel" Elevation="2">
+                <MudGrid>
+                    <MudItem xs="12" sm="4">
+                        <MudText Typo="Typo.h6" Align="Align.Center">Total Stock</MudText>
+                        <MudText Typo="Typo.h3" Align="Align.Center" Color="Color.Primary">@TotalStock</MudText>
+                    </MudItem>
+                     <MudItem xs="12" sm="4">
+                        <MudText Typo="Typo.h6" Align="Align.Center">Predicted Demand</MudText>
+                        <MudText Typo="Typo.h3" Align="Align.Center" Color="Color.Success">@TopPrediction</MudText>
+                        <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block" Color="Color.Secondary">Based on stock</MudText>
+                    </MudItem>
+                     <MudItem xs="12" sm="4">
+                        <MudText Typo="Typo.h6" Align="Align.Center">Actions</MudText>
+                        <div class="d-flex justify-center gap-2 mt-2">
+                            <MudTooltip Text="Smart Invoices">
+                                <MudIconButton Icon="@Icons.Material.Filled.Description" Color="Color.Info" OnClick="@(() => NavigationManager.NavigateTo("/retailer/invoices"))" />
+                            </MudTooltip>
+                            <MudTooltip Text="OCR Scan Bills">
+                                <MudIconButton Icon="@Icons.Material.Filled.DocumentScanner" Color="Color.Warning" OnClick="@(() => NavigationManager.NavigateTo("/retailer/ocr"))" />
+                            </MudTooltip>
+                             <MudTooltip Text="Analytics">
+                                <MudIconButton Icon="@Icons.Material.Filled.Analytics" Color="Color.Secondary" />
+                            </MudTooltip>
+                        </div>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Components -->
+        <MudItem xs="12" md="4">
+            <QrGenerator />
+        </MudItem>
+        
+        <MudItem xs="12" md="4">
+            <ShelfCalculator />
+        </MudItem>
+        
+        <MudItem xs="12" md="4">
+            <InventoryTracker />
+        </MudItem>
+
+    </MudGrid>
+    
+    <ColaProtectorBot />
+</MudContainer>
+
+<style>
+    /* Reusing glass panel style but slightly modified for dashboard context */
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 12px;
+    }
+    
+    body {
+        background-color: #f5f5f5;
+        background-image: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+    }
+</style>
+
+@code {
+    [Inject] NavigationManager NavigationManager { get; set; } = default!;
+    
+    private int TotalStock { get; set; }
+    private string TopPrediction { get; set; } = "High";
+
+    protected override void OnInitialized()
+    {
+        var stocks = InventoryService.GetAllStock();
+        TotalStock = stocks.Values.Sum();
+        
+        var preds = PredictionService.GetPredictions();
+        var high_demand = preds.FirstOrDefault(p => p.PredictedDemand == "High");
+        TopPrediction = high_demand != null ? $"{high_demand.BottleType} (High)" : "Steady";
+    }
+    
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo("/roles");
+    }
+}

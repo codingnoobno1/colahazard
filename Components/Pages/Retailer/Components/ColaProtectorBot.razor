@@ -1,0 +1,256 @@
+@using PackTrack.Services
+@inject InventoryService InventoryService
+@inject PredictionService PredictionService
+
+<!-- Floating Toggle Button -->
+<MudTooltip Text="ColaGuard AI">
+    <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.SmartToy" Class="bot-fab" OnClick="ToggleChat" />
+    @if (ShowAlert && !IsOpen)
+    {
+        <span class="bot-badge">!</span>
+    }
+</MudTooltip>
+
+<!-- Chat Window -->
+<div class="@($"bot-window {(IsOpen ? "open" : "")}")">
+    <div class="bot-header d-flex justify-space-between align-center px-4 py-3">
+        <div class="d-flex align-center">
+            <MudIcon Icon="@Icons.Material.Filled.SmartToy" Size="Size.Medium" Class="mr-2" Style="color: white;" />
+            <div>
+                <MudText Typo="Typo.subtitle2" Style="font-weight: 700; color: white;">ColaGuard AI</MudText>
+                <MudText Typo="Typo.caption" Style="color: rgba(255,255,255,0.8);">Online • Monitoring</MudText>
+            </div>
+        </div>
+        <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Style="color: white;" OnClick="ToggleChat" />
+    </div>
+
+    <div class="bot-messages pa-4">
+        @foreach (var msg in ChatHistory)
+        {
+            <div class="@($"message {(msg.IsUser ? "user" : "bot")}")">
+                @if (!msg.IsUser)
+                {
+                   <div class="bot-icon-small">
+                       <MudIcon Icon="@Icons.Material.Filled.SmartToy" Size="Size.Small" Style="font-size: 1rem;" />
+                   </div> 
+                }
+                <div class="message-content">
+                    @msg.Text
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="bot-input-area pa-3">
+        <MudTextField @bind-Value="UserQuery" Placeholder="Ask about stock..." Variant="Variant.Outlined" Margin="Margin.Dense" Class="chat-input" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Send" OnAdornmentClick="ProcessQuery" OnKeyDown="@handleEnter" />
+    </div>
+</div>
+
+<style>
+    .bot-fab {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 2000;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    }
+
+    .bot-badge {
+        position: fixed;
+        bottom: 75px;
+        right: 30px;
+        background: #ff3d00;
+        color: white;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        text-align: center;
+        font-weight: bold;
+        line-height: 20px;
+        font-size: 12px;
+        z-index: 2001;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .bot-window {
+        position: fixed;
+        bottom: 100px;
+        right: 30px;
+        width: 350px;
+        height: 500px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        z-index: 1999;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.1);
+        transform: translateY(20px);
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .bot-window.open {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    .bot-header {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .bot-messages {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: #f8f9fa;
+    }
+
+    .message {
+        display: flex;
+        align-items: flex-end;
+        max-width: 85%;
+        font-size: 0.9rem;
+    }
+
+    .message.user {
+        align-self: flex-end;
+        flex-direction: row-reverse;
+    }
+
+    .message.bot {
+        align-self: flex-start;
+    }
+
+    .bot-icon-small {
+        background: #1e3c72;
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 8px;
+        flex-shrink: 0;
+    }
+
+    .message-content {
+        padding: 10px 14px;
+        border-radius: 12px;
+        line-height: 1.4;
+        position: relative;
+    }
+
+    .message.user .message-content {
+        background: #2a5298;
+        color: white;
+        border-bottom-right-radius: 2px;
+    }
+
+    .message.bot .message-content {
+        background: white;
+        color: #333;
+        border: 1px solid #e0e0e0;
+        border-bottom-left-radius: 2px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .bot-input-area {
+        background: white;
+        border-top: 1px solid #eee;
+    }
+
+    .chat-input .mud-input-outlined-border {
+        border-color: #e0e0e0 !important;
+        border-radius: 24px !important;
+    }
+</style>
+
+@code {
+    private bool IsOpen = false;
+    private bool ShowAlert = false;
+    private string UserQuery = "";
+    
+    private class ChatMessage { public string Text { get; set; } = ""; public bool IsUser { get; set; } }
+    private List<ChatMessage> ChatHistory = new List<ChatMessage>();
+
+    protected override void OnInitialized()
+    {
+        // Initial greeting
+        ChatHistory.Add(new ChatMessage { Text = "Hello! I'm ColaGuard. I'm monitoring your supply chain real-time.", IsUser = false });
+        CheckHazards();
+    }
+
+    private void ToggleChat()
+    {
+        IsOpen = !IsOpen;
+    }
+
+    private void CheckHazards()
+    {
+        var stocks = InventoryService.GetAllStock();
+        var thick = stocks.ContainsKey("Thick") ? stocks["Thick"] : 0;
+        
+        if (thick < 100)
+        {
+            ShowAlert = true;
+            ChatHistory.Add(new ChatMessage { Text = "⚠️ HAZARD ALERT: Thick bottle stock is CRITICAL! Production may halt.", IsUser = false });
+        }
+    }
+    
+    private void handleEnter(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            ProcessQuery();
+        }
+    }
+
+    private void ProcessQuery()
+    {
+        if (string.IsNullOrWhiteSpace(UserQuery)) return;
+
+        var q = UserQuery.Trim();
+        ChatHistory.Add(new ChatMessage { Text = q, IsUser = true });
+        
+        // Process response
+        var response = GetResponse(q.ToLower());
+        ChatHistory.Add(new ChatMessage { Text = response, IsUser = false });
+
+        UserQuery = "";
+    }
+
+    private string GetResponse(string q)
+    {
+        if (q.Contains("sales") || q.Contains("prediction"))
+        {
+            var preds = PredictionService.GetPredictions();
+            var high = preds.FirstOrDefault(p => p.PredictedDemand == "High");
+            if (high != null)
+                return $"Forecast: High demand expected for {high.BottleType}. Restock advised.";
+            return "Forecast: Demand is steady. No immediate anomalies.";
+        }
+        else if (q.Contains("stock") || q.Contains("inventory"))
+        {
+            var stocks = InventoryService.GetAllStock();
+            var total = stocks.Values.Sum();
+            return $"Current Inventory: {total} total units securely stored.";
+        }
+        else if (q.Contains("hello") || q.Contains("hi"))
+        {
+             return "Greetings, Operator. How can I assist the supply chain today?";
+        }
+        else
+        {
+            return "I am optimized for inventory and hazard analysis. Please ask about stock, sales, or hazards.";
+        }
+    }
+}
+

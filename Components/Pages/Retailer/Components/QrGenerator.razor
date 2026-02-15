@@ -1,0 +1,42 @@
+@using QRCoder
+
+@using System.IO
+
+<MudCard Class="pa-4 glass-panel h-100">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">QR Code Generator</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudTextField @bind-Value="InputText" Label="Enter Rack ID or Batch No" Variant="Variant.Outlined" Class="mb-4" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GenerateQRCode" FullWidth="true">Generate QR</MudButton>
+
+        @if (!string.IsNullOrEmpty(QRCodeImage))
+        {
+            <div class="d-flex justify-center mt-4">
+                <img src="@QRCodeImage" style="width: 200px; height: 200px; border-radius: 8px;" />
+            </div>
+            <MudText Align="Align.Center" Typo="Typo.caption" Class="mt-2">Scan to update inventory</MudText>
+        }
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private string InputText { get; set; } = "";
+    private string QRCodeImage { get; set; } = "";
+
+    private void GenerateQRCode()
+    {
+        if (string.IsNullOrWhiteSpace(InputText)) return;
+
+        using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
+        {
+            QRCodeData qrCodeData = qrGenerator.CreateQrCode(InputText, QRCodeGenerator.ECCLevel.Q);
+            PngByteQRCode qrCode = new PngByteQRCode(qrCodeData);
+            byte[] qrCodeBytes = qrCode.GetGraphic(20);
+            string base64 = Convert.ToBase64String(qrCodeBytes);
+            QRCodeImage = $"data:image/png;base64,{base64}";
+        }
+    }
+}

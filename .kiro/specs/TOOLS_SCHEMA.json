@@ -1,0 +1,51 @@
+[
+    {
+        "name": "calculate_gst",
+        "description": "Calculate GST breakdown for invoice",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "rate": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "amount",
+                "rate"
+            ]
+        }
+    },
+    {
+        "name": "validate_gstin",
+        "description": "Validate GSTIN structure and checksum",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "gstin": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "gstin"
+            ]
+        }
+    },
+    {
+        "name": "fraud_check_invoice",
+        "description": "Detect invoice fraud patterns",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "invoice_id": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "invoice_id"
+            ]
+        }
+    }
+]

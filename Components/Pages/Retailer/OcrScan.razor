@@ -1,0 +1,100 @@
+@page "/retailer/ocr"
+@using PackTrack.Services
+@using PackTrack.Models
+@using PackTrack.Components.Layout
+@layout LandingLayout
+@inject OcrService OcrService
+@inject InvoiceService InvoiceService
+@inject NavigationManager NavManager
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
+    <MudText Typo="Typo.h4" Style="font-weight: 700;" Class="mb-4">OCR Bill Scanner</MudText>
+
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-8 d-flex flex-column align-center justify-center glass-panel" Style="height: 400px; border: 2px dashed #ccc; cursor: pointer;" Elevation="0">
+                <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Size="Size.Large" Color="Color.Primary" Style="font-size: 5rem;" />
+                <MudText Typo="Typo.h6" Class="mt-4">Drag & Drop Bill Image</MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="SimulateScan">Simulate Upload & Scan</MudButton>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            @if (ScanResult != null)
+            {
+                <MudCard Class="glass-panel h-100">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Scanned Data</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudTextField Label="Supplier" @bind-Value="ScanResult.SupplierName" Variant="Variant.Outlined" Class="mb-2" />
+                        <MudDatePicker Label="Date" @bind-Date="MeasuredDate" Class="mb-2" />
+                        <MudNumericField Label="Total Amount" @bind-Value="ScanResult.TotalAmount" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentText="₹" Class="mb-4" />
+
+                        <MudText Typo="Typo.subtitle2">Detected Items:</MudText>
+                        <MudList T="string" Dense="true">
+                            @foreach (var item in ScanResult.DetectedItems)
+                            {
+                                <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">
+                                    @item.Description - @item.Quantity qty (₹@item.UnitPrice:N2)
+                                </MudListItem>
+                            }
+                        </MudList>
+                    </MudCardContent>
+                    <MudCardActions>
+                         <MudButton Variant="Variant.Filled" Color="Color.Success" FullWidth="true" OnClick="SaveAsInvoice">Verify & Save Invoice</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            }
+            else
+            {
+                 <MudPaper Class="pa-8 d-flex align-center justify-center h-100" Elevation="0" Style="background: rgba(0,0,0,0.05);">
+                    <MudText Color="Color.Secondary">Scan result will appear here</MudText>
+                </MudPaper>
+            }
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+
+<style>
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+    }
+</style>
+
+@code {
+    private OcrResult? ScanResult;
+    private DateTime? MeasuredDate;
+
+    private void SimulateScan()
+    {
+        // Mock scan
+        ScanResult = OcrService.ScanImage("dummy-base64");
+        MeasuredDate = ScanResult.Date;
+    }
+
+    private void SaveAsInvoice()
+    {
+        if (ScanResult == null) return;
+
+        var invoice = new Invoice
+        {
+            CustomerName = ScanResult.SupplierName,
+            Date = MeasuredDate ?? DateTime.Now,
+            TotalAmount = ScanResult.TotalAmount,
+            Items = ScanResult.DetectedItems.Select(i => new InvoiceItem 
+            { 
+                Description = i.Description, 
+                Quantity = i.Quantity, 
+                UnitPrice = i.UnitPrice 
+            }).ToList()
+        };
+
+        InvoiceService.CreateInvoice(invoice);
+        NavManager.NavigateTo("/retailer/invoices");
+    }
+}

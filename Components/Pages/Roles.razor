@@ -4,68 +4,201 @@
 
 <PageTitle>Choose Your Role - PackSight</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="py-16">
-    <MudText Typo="Typo.h3" Align="Align.Center" Class="mb-4" Color="Color.Primary" Style="font-weight: bold;">Select Your Role</MudText>
-    <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-12" Color="Color.Secondary">Access your specific dashboard to track the lifecycle from production to recycling.</MudText>
+<div class="roles-page-container">
+    <div class="background-overlay"></div>
     
-    <MudGrid Justify="Justify.Center" Spacing="4">
-        <!-- Factory -->
-        <MudItem xs="12" sm="6" md="4">
-            <MudCard Elevation="4" Class="d-flex flex-column align-center pa-8 hover-scale" Style="height: 100%; cursor: pointer;" onclick="location.href='/login/factory'">
-                <MudAvatar Color="Color.Error" Variant="Variant.Filled" Size="Size.Large" Class="mb-4" Style="width: 80px; height: 80px; font-size: 3rem;">🏭</MudAvatar>
-                <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-2">Factory</MudText>
-                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="mb-6">Hindustan Beverages Associate</MudText>
-                <MudButton Variant="Variant.Outlined" Color="Color.Error" EndIcon="@Icons.Material.Filled.ArrowForward">Login</MudButton>
-            </MudCard>
-        </MudItem>
+    <MudContainer MaxWidth="MaxWidth.Large" Class="content-container py-16">
+        <MudText Typo="Typo.h3" Align="Align.Center" Class="mb-4 text-white title-shadow" Style="font-weight: 800; letter-spacing: 1px;">SELECT YOUR ROLE</MudText>
+        <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-12 text-white-50 subtitle-shadow" Style="font-weight: 300;">Access your dedicated dashboard to manage the lifecycle.</MudText>
         
-        <!-- Transport -->
-        <MudItem xs="12" sm="6" md="4">
-            <MudCard Elevation="4" Class="d-flex flex-column align-center pa-8 hover-scale" Style="height: 100%; cursor: pointer;" onclick="location.href='/login/transport'">
-                <MudAvatar Color="Color.Warning" Variant="Variant.Filled" Size="Size.Large" Class="mb-4" Style="width: 80px; height: 80px; font-size: 3rem;">🚚</MudAvatar>
-                <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-2">Transport</MudText>
-                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="mb-6">Logistics & Fleet Management</MudText>
-                <MudButton Variant="Variant.Outlined" Color="Color.Warning" EndIcon="@Icons.Material.Filled.ArrowForward">Login</MudButton>
-            </MudCard>
-        </MudItem>
-        
-        <!-- Wholesaler -->
-        <MudItem xs="12" sm="6" md="4">
-            <MudCard Elevation="4" Class="d-flex flex-column align-center pa-8 hover-scale" Style="height: 100%; cursor: pointer;" onclick="location.href='/login/wholesaler'">
-                <MudAvatar Color="Color.Info" Variant="Variant.Filled" Size="Size.Large" Class="mb-4" Style="width: 80px; height: 80px; font-size: 3rem;">🏪</MudAvatar>
-                <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-2">Wholesaler</MudText>
-                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="mb-6">Bulk Distribution Center</MudText>
-                <MudButton Variant="Variant.Outlined" Color="Color.Info" EndIcon="@Icons.Material.Filled.ArrowForward">Login</MudButton>
-            </MudCard>
-        </MudItem>
+        <MudGrid Justify="Justify.Center" Spacing="6">
+            <!-- Factory -->
+            <MudItem xs="12" sm="6" md="4" lg="2">
+                <div class="role-card glass-panel" onclick="location.href='/login/factory'">
+                    <div class="icon-wrapper factory-gradient mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.Factory" Size="Size.Large" Class="role-icon" />
+                    </div>
+                    <MudText Typo="Typo.h6" Class="role-title mb-1">Factory</MudText>
+                    <MudText Typo="Typo.caption" Class="role-desc mb-4">Production & Assembly</MudText>
+                    <div class="action-arrow">
+                        <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" />
+                    </div>
+                </div>
+            </MudItem>
+            
+            <!-- Transport -->
+            <MudItem xs="12" sm="6" md="4" lg="2">
+                <div class="role-card glass-panel" onclick="location.href='/login/transport'">
+                    <div class="icon-wrapper transport-gradient mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Size="Size.Large" Class="role-icon" />
+                    </div>
+                    <MudText Typo="Typo.h6" Class="role-title mb-1">Transport</MudText>
+                    <MudText Typo="Typo.caption" Class="role-desc mb-4">Logistics & Fleet</MudText>
+                    <div class="action-arrow">
+                        <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" />
+                    </div>
+                </div>
+            </MudItem>
+            
+            <!-- Wholesaler -->
+            <MudItem xs="12" sm="6" md="4" lg="2">
+                <div class="role-card glass-panel" onclick="location.href='/login/wholesaler'">
+                    <div class="icon-wrapper wholesaler-gradient mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.Store" Size="Size.Large" Class="role-icon" />
+                    </div>
+                    <MudText Typo="Typo.h6" Class="role-title mb-1">Wholesaler</MudText>
+                    <MudText Typo="Typo.caption" Class="role-desc mb-4">Bulk Distribution</MudText>
+                    <div class="action-arrow">
+                        <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" />
+                    </div>
+                </div>
+            </MudItem>
 
-        <!-- Retail -->
-        <MudItem xs="12" sm="6" md="4">
-            <MudCard Elevation="4" Class="d-flex flex-column align-center pa-8 hover-scale" Style="height: 100%; cursor: pointer;" onclick="location.href='/login/retail'">
-                <MudAvatar Color="Color.Success" Variant="Variant.Filled" Size="Size.Large" Class="mb-4" Style="width: 80px; height: 80px; font-size: 3rem;">🛍️</MudAvatar>
-                <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-2">Retail</MudText>
-                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="mb-6">Store Inventory & Sales</MudText>
-                <MudButton Variant="Variant.Outlined" Color="Color.Success" EndIcon="@Icons.Material.Filled.ArrowForward">Login</MudButton>
-            </MudCard>
-        </MudItem>
-        
-        <!-- Event -->
-        <MudItem xs="12" sm="6" md="4">
-            <MudCard Elevation="4" Class="d-flex flex-column align-center pa-8 hover-scale" Style="height: 100%; cursor: pointer;" onclick="location.href='/login/event'">
-                <MudAvatar Color="Color.Secondary" Variant="Variant.Filled" Size="Size.Large" Class="mb-4" Style="width: 80px; height: 80px; font-size: 3rem;">🎉</MudAvatar>
-                <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-2">Event / Bulk</MudText>
-                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="mb-6">Weddings & Large Events</MudText>
-                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" EndIcon="@Icons.Material.Filled.ArrowForward">Login</MudButton>
-            </MudCard>
-        </MudItem>
-    </MudGrid>
-</MudContainer>
+            <!-- Retail -->
+            <MudItem xs="12" sm="6" md="4" lg="2">
+                <div class="role-card glass-panel" onclick="location.href='/retailer/dashboard'">
+                    <div class="icon-wrapper retail-gradient mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.ShoppingBag" Size="Size.Large" Class="role-icon" />
+                    </div>
+                    <MudText Typo="Typo.h6" Class="role-title mb-1">Retail</MudText>
+                    <MudText Typo="Typo.caption" Class="role-desc mb-4">Store & Sales</MudText>
+                    <div class="action-arrow">
+                        <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" />
+                    </div>
+                </div>
+            </MudItem>
+            
+            <!-- Event -->
+            <MudItem xs="12" sm="6" md="4" lg="2">
+                <div class="role-card glass-panel" onclick="location.href='/login/event'">
+                    <div class="icon-wrapper event-gradient mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.Celebration" Size="Size.Large" Class="role-icon" />
+                    </div>
+                    <MudText Typo="Typo.h6" Class="role-title mb-1">Event</MudText>
+                    <MudText Typo="Typo.caption" Class="role-desc mb-4">Weddings & Galas</MudText>
+                    <div class="action-arrow">
+                        <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" />
+                    </div>
+                </div>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
+</div>
 
 <style>
-    .hover-scale {
-        transition: transform 0.2s;
+    .roles-page-container {
+        position: relative;
+        min-height: 100vh;
+        width: 100%;
+        background-image: url('/cola.png');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
     }
-    .hover-scale:hover {
-        transform: scale(1.03);
+
+    .background-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.35); /* Reduced opacity for clearer image */
+        z-index: 1;
     }
+
+    .content-container {
+        position: relative;
+        z-index: 2;
+    }
+
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        border-radius: 16px;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        cursor: pointer;
+        height: 100%;
+        text-align: center;
+    }
+
+    .glass-panel:hover {
+        transform: translateY(-8px);
+        background: rgba(255, 255, 255, 0.25);
+        border-color: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
+    }
+
+    .icon-wrapper {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        transition: transform 0.3s ease;
+    }
+
+    .glass-panel:hover .icon-wrapper {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    /* Gradients for icons */
+    .factory-gradient { background: linear-gradient(135deg, #FF512F, #DD2476); }
+    .transport-gradient { background: linear-gradient(135deg, #F09819, #EDDE5D); color: #333 !important; }
+    .wholesaler-gradient { background: linear-gradient(135deg, #1FA2FF, #12D8FA, #A6FFCB); color: #333 !important; }
+    .retail-gradient { background: linear-gradient(135deg, #11998e, #38ef7d); }
+    .event-gradient { background: linear-gradient(135deg, #8E2DE2, #4A00E0); }
+
+    .role-title {
+        color: white;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    .role-desc {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.85rem;
+    }
+
+    .action-arrow {
+        margin-top: auto;
+        width: 32px;
+        height: 32px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .glass-panel:hover .action-arrow {
+        background: white;
+        color: #333;
+        transform: translateX(5px);
+    }
+
+    .title-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+    
+    .subtitle-shadow {
+        text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    }
+    
+    .text-white { color: #ffffff !important; }
+    .text-white-50 { color: rgba(255, 255, 255, 0.8) !important; }
 </style>

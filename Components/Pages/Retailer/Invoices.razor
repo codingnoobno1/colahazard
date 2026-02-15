@@ -1,0 +1,96 @@
+@page "/retailer/invoices"
+@using PackTrack.Services
+@using PackTrack.Models
+@using PackTrack.Components.Layout
+@layout LandingLayout
+@inject InvoiceService InvoiceService
+@inject IJSRuntime JS
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
+    <div class="d-flex justify-space-between align-center mb-8">
+        <div>
+            <MudText Typo="Typo.h4" Style="font-weight: 700;">Invoices</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Manage and generate PDF invoices.</MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateTestInvoice">Create Test Invoice</MudButton>
+    </div>
+
+    <MudTable Items="@InvoiceList" Hover="true" Elevation="4" Class="glass-panel">
+        <HeaderContent>
+            <MudTh>Invoice #</MudTh>
+            <MudTh>Date</MudTh>
+            <MudTh>Customer</MudTh>
+            <MudTh>Total Amount</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Invoice #">@context.InvoiceNumber</MudTd>
+            <MudTd DataLabel="Date">@context.Date.ToShortDateString()</MudTd>
+            <MudTd DataLabel="Customer">@context.CustomerName</MudTd>
+            <MudTd DataLabel="Total Amount">₹@context.TotalAmount.ToString("N2")</MudTd>
+            <MudTd DataLabel="Actions">
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Filled.PictureAsPdf" OnClick="@(() => DownloadPdf(context))">Download PDF</MudButton>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+</MudContainer>
+
+<script>
+    window.downloadFile = (fileName, contentType, content) => {
+        const blob = new Blob([new Uint8Array(content)], { type: contentType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+</script>
+
+<style>
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+    }
+</style>
+
+@code {
+    private IEnumerable<Invoice> InvoiceList = new List<Invoice>();
+
+    protected override void OnInitialized()
+    {
+        LoadInvoices();
+    }
+
+    private void LoadInvoices()
+    {
+        InvoiceList = InvoiceService.GetInvoices();
+    }
+
+    private void CreateTestInvoice()
+    {
+        var invoice = new Invoice
+        {
+            CustomerName = "Retail Shop " + new Random().Next(100, 999),
+            Items = new List<InvoiceItem>
+            {
+                new InvoiceItem { Description = "Thick Bottles (Batch A)", Quantity = 500, UnitPrice = 5.0m },
+                new InvoiceItem { Description = "Thin Bottles (Batch B)", Quantity = 200, UnitPrice = 3.5m },
+                 new InvoiceItem { Description = "Logistics Fee", Quantity = 1, UnitPrice = 150.0m }
+            }
+        };
+        invoice.TotalAmount = invoice.Items.Sum(x => x.Total);
+        
+        InvoiceService.CreateInvoice(invoice);
+        LoadInvoices();
+    }
+
+    private async Task DownloadPdf(Invoice invoice)
+    {
+        var pdfBytes = InvoiceService.GeneratePdf(invoice);
+        await JS.InvokeVoidAsync("downloadFile", $"Invoice-{invoice.InvoiceNumber}.pdf", "application/pdf", pdfBytes);
+    }
+}
