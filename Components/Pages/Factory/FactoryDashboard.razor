@@ -1,0 +1,474 @@
+@page "/factory/dashboard"
+@using PackTrack.Components.Layout
+@using PackTrack.Components.Pages.Factory.Components
+@using PackTrack.Services
+@using PackTrack.Models
+@inherits SafeComponent
+@inject FactoryService FactoryService
+@inject LogisticsService LogisticsService
+@inject RetailService RetailService
+@inject SustainabilityService SustainabilityService
+@inject ManifestGenerator ManifestGenerator
+@inject PredictionService PredictionService
+@inject ReportingService ReportingService
+@inject PdfReportService PdfReportService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+
+
+
+
+
+
+@layout LandingLayout
+
+<PageTitle>Enterprise Control Center - PackSight</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-8">
+    <div class="d-flex justify-space-between align-center mb-8">
+        <div>
+            <MudText Typo="Typo.h4" Style="font-weight: 800; letter-spacing: -0.5px;">Factory Control Center <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Text">v2.0 Enterprise</MudChip></MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Industrial IoT & Traceability Mesh | Real-time Production Yield & Profitability</MudText>
+        </div>
+        <div class="d-flex gap-2">
+            <MudMenu StartIcon="@Icons.Material.Filled.Description" Label="Export Reports" Color="Color.Secondary" Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
+                <MudMenuItem Icon="@Icons.Material.Filled.TableChart" OnClick="ExportCsv">Download CSV</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.PictureAsPdf" OnClick="ExportPdf">Generate industrial PDF</MudMenuItem>
+            </MudMenu>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="NavigateBack">Exit to Roles</MudButton>
+        </div>
+    </div>
+
+    <MudGrid Spacing="4">
+    <MudTabs Elevation="0" Outlined="true" Color="Color.Primary" Rounded="true" PanelClass="pa-6" Class="glass-panel-tabs mb-8">
+        <MudTabPanel Icon="@Icons.Material.Filled.PrecisionManufacturing" Text="PRODUCTION">
+            <MudGrid Spacing="4">
+                <!-- Overview Stats -->
+                <MudItem xs="12" md="8">
+                    <MudPaper Class="pa-6 glass-panel" Elevation="0" Style="height: 100%;">
+                        <MudGrid>
+                            <MudItem xs="12" sm="4">
+                                <div class="stat-card">
+                                    <MudText Typo="Typo.caption" Class="stat-label">Production Today</MudText>
+                                    <MudText Typo="Typo.h3" Class="stat-value primary-text">@TotalProducedToday</MudText>
+                                    <MudProgressLinear Color="Color.Primary" Value="75" Class="mt-2" />
+                                </div>
+                            </MudItem>
+                            <MudItem xs="12" sm="4">
+                                <div class="stat-card">
+                                    <MudText Typo="Typo.caption" Class="stat-label">Yield Efficiency</MudText>
+                                    <MudText Typo="Typo.h3" Class="stat-value success-text">@YieldPercent%</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Success">Above Target (+1.2%)</MudText>
+                                </div>
+                            </MudItem>
+                            <MudItem xs="12" sm="4">
+                                <div class="stat-card">
+                                    <MudText Typo="Typo.caption" Class="stat-label">Enterprise Profit</MudText>
+                                    <MudText Typo="Typo.h3" Class="stat-value tertiary-text">₹@TotalProfit.ToString("N0")</MudText>
+                                    <MudText Typo="Typo.caption" Class="tertiary-text">Margin: 45% (Industrial)</MudText>
+                                </div>
+                            </MudItem>
+                        </MudGrid>
+                        <div class="mt-4 d-flex gap-2">
+                             <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.List" OnClick="ExportLedger" Size="Size.Small">Industrial Ledger</MudButton>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+
+
+                <MudItem xs="12" md="4">
+                    <MudPaper Class="pa-6 glass-panel sustainability-panel-mini" Elevation="0">
+                        <MudText Typo="Typo.subtitle2" Class="stat-label mb-2" Style="color: #00c853;">Live Recycle Rate</MudText>
+                        <div class="d-flex justify-space-between align-center mb-1">
+                            <MudText Typo="Typo.body2" Style="font-weight: 700;">@RecycleRate%</MudText>
+                        </div>
+                        <MudProgressLinear Color="Color.Success" Value="@RecycleRate" Size="Size.Small" />
+                        <MudText Typo="Typo.caption" Class="mt-1 d-block">Global Recovery Active</MudText>
+                    </MudPaper>
+                </MudItem>
+
+                @if (selectedBatchForHierarchy == null)
+                {
+                    <MudItem xs="12" md="4" class="fade-in">
+                        <BatchCreator OnBatchProduced="RefreshData" />
+                    </MudItem>
+                    
+                    <MudItem xs="12" md="8" class="fade-in">
+                        <ProductionList Batches="@batches" OnStatusUpdated="RefreshData" OnViewHierarchy="ViewHierarchy" />
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="12" class="fade-in">
+                        <HierarchyExplorer Batch="@selectedBatchForHierarchy" OnClose="@(() => selectedBatchForHierarchy = null)" />
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudTabPanel>
+
+        <MudTabPanel Icon="@Icons.Material.Filled.LocalShipping" Text="LOGISTICS & SHIPMENTS">
+            <MudGrid>
+                <MudItem xs="12" md="4">
+                    <MudPaper Class="pa-6 glass-panel" Elevation="0">
+                        <MudText Typo="Typo.h6" Class="mb-4">Active Truck Fleet</MudText>
+                        @foreach (var truck in trucks)
+                        {
+                            <div class="d-flex justify-space-between align-center mb-3 pa-3 rounded-lg" style="background: rgba(255,255,255,0.5);">
+                                <div>
+                                    <MudText Typo="Typo.body1" Style="font-weight: 700;">@truck.TruckNumber</MudText>
+                                    <MudText Typo="Typo.caption">ID: @truck.TruckId | GPS: @truck.GPSDeviceId</MudText>
+                                </div>
+                                <MudChip T="string" Color="@(truck.Status == "Available" ? Color.Success : Color.Primary)" Size="Size.Small">@truck.Status</MudChip>
+                            </div>
+                        }
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" md="8">
+                    <MudPaper Class="pa-6 glass-panel" Elevation="0">
+                        <MudText Typo="Typo.h6" Class="mb-4">Live Shipments</MudText>
+                        <MudTable Items="@shipments" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" Dense="true">
+                            <HeaderContent>
+                                <MudTh>Dispatch</MudTh>
+                                <MudTh>Truck</MudTh>
+                                <MudTh>Route</MudTh>
+                                <MudTh>Status</MudTh>
+                                <MudTh>IoT Health</MudTh>
+                                <MudTh>Docs</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Dispatch">@context.PickupDate.ToShortDateString()</MudTd>
+                                <MudTd DataLabel="Truck">@context.TruckId</MudTd>
+                                <MudTd DataLabel="Route">@context.RouteCode</MudTd>
+                                <MudTd DataLabel="Status">
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">@context.Status</MudChip>
+                                </MudTd>
+                                <MudTd>
+                                    <div class="d-flex gap-1">
+                                        <MudIcon Icon="@Icons.Material.Filled.Thermostat" Size="Size.Small" Color="Color.Success"/>
+                                        <MudIcon Icon="@Icons.Material.Filled.WaterDrop" Size="Size.Small" Color="Color.Info"/>
+                                        <MudIcon Icon="@Icons.Material.Filled.Speed" Size="Size.Small" Color="Color.Warning"/>
+                                    </div>
+                                </MudTd>
+                                <MudTd>
+                                    <MudIconButton Icon="@Icons.Material.Filled.PictureAsPdf" Color="Color.Error" Size="Size.Small" OnClick="@(() => DownloadManifest(context.Id))" />
+                                </MudTd>
+                            </RowTemplate>
+
+                        </MudTable>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
+        <MudTabPanel Icon="@Icons.Material.Filled.Storefront" Text="RETAIL & SHELF">
+            <MudGrid>
+                <MudItem xs="12" md="4">
+                    <MudPaper Class="pa-6 glass-panel restock-advisor-panel" Elevation="0">
+                        <div class="d-flex align-center gap-2 mb-4">
+                            <MudIcon Icon="@Icons.Material.Filled.AutoGraph" Color="Color.Primary" />
+                            <MudText Typo="Typo.h6">AI Restock Advisor</MudText>
+                            <MudSpacer />
+                            <MudTooltip Text="Simulate Random Sales">
+                                <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Size="Size.Small" OnClick="SimulateSales" />
+                            </MudTooltip>
+
+                        </div>
+
+                        @if (rackAdvisories.Any())
+                        {
+                            @foreach (var advice in rackAdvisories)
+                            {
+                                <div class="pa-3 mb-3 rounded-lg border border-solid" style="background: rgba(255,255,255,0.6); border-color: @(advice.PredictedDemand == "CRITICAL" ? "#ff5252" : "#ffab40")">
+                                    <div class="d-flex justify-space-between align-center">
+                                        <MudText Typo="Typo.body2" Style="font-weight: 700;">@advice.BottleType</MudText>
+                                        <MudChip T="string" Size="Size.Small" Color="@(advice.PredictedDemand == "CRITICAL" ? Color.Error : Color.Warning)">@advice.PredictedDemand</MudChip>
+                                    </div>
+                                    <MudText Typo="Typo.caption" Class="d-block mt-1">@advice.Reason</MudText>
+                                    <MudText Typo="Typo.caption" Style="font-weight: 600;">Suggested Pull: +@advice.SuggestedReorder units</MudText>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <MudAlert Severity="Severity.Success" Variant="Variant.Outlined">All retail racks sufficiently stocked.</MudAlert>
+                        }
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" md="8">
+                    <MudGrid>
+                        @foreach (var retail in retailers)
+                        {
+                            <MudItem xs="12" md="6">
+                                <MudPaper Class="pa-6 glass-panel" Elevation="0">
+                                    <div class="d-flex justify-space-between align-center mb-4">
+                                        <div>
+                                            <MudText Typo="Typo.h6">@retail.Name</MudText>
+                                            <MudText Typo="Typo.caption">@retail.City, @retail.Region</MudText>
+                                        </div>
+                                        <MudChip T="string" Color="Color.Success" Size="Size.Small">@retail.Status</MudChip>
+                                    </div>
+                                    <MudText Typo="Typo.caption" Class="stat-label">Smart Racks</MudText>
+                                    <div class="mt-2">
+                                        @foreach (var rack in FactoryService.GetRacksForRetail(retail.Id))
+                                        {
+                                            <div class="pa-2 mb-2 rounded border border-dotted">
+                                                <div class="d-flex justify-space-between">
+                                                    <MudText Typo="Typo.body2">Rack @rack.RackCode (@rack.BottleTypeAssigned)</MudText>
+                                                    <MudText Typo="Typo.body2" Style="font-weight: 700;">@rack.CurrentUnits / @rack.CapacityUnits</MudText>
+                                                </div>
+                                                <MudProgressLinear Color="@(rack.CurrentUnits < (rack.CapacityUnits * 0.2) ? Color.Error : rack.CurrentUnits < (rack.CapacityUnits * 0.5) ? Color.Warning : Color.Primary)" Value="@((double)rack.CurrentUnits / rack.CapacityUnits * 100)" Size="Size.Small" />
+                                            </div>
+                                        }
+                                    </div>
+                                </MudPaper>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
+
+        <MudTabPanel Icon="@Icons.Material.Filled.Loop" Text="SUSTAINABILITY">
+            <MudGrid Spacing="4">
+                <MudItem xs="12" md="4">
+                    <MudPaper Class="pa-6 glass-panel sustainability-panel" Elevation="0">
+                        <MudText Typo="Typo.h6" Class="mb-4" Style="color: #00c853;">Eco Metrics</MudText>
+                        <div class="stat-card mb-4">
+                            <MudText Typo="Typo.caption" Class="stat-label">Total Carbon Optimized</MudText>
+                            <MudText Typo="Typo.h4" Style="color: #00c853;">@CarbonOffset.ToString("N1") g</MudText>
+                        </div>
+                        <div class="stat-card">
+                            <MudText Typo="Typo.caption" Class="stat-label">Material Recovered</MudText>
+                            <MudText Typo="Typo.h4" Style="color: #00c853;">@MaterialRecoveredKg.ToString("N2") kg</MudText>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" md="8">
+                    <MudPaper Class="pa-6 glass-panel" Elevation="0">
+                        <MudText Typo="Typo.h6" Class="mb-4">Recovery Centers</MudText>
+                        <MudGrid>
+                            @foreach (var center in recoveryCenters)
+                            {
+                                <MudItem xs="6">
+                                    <div class="pa-4 rounded-lg bg-light d-flex justify-space-between align-center">
+                                        <div>
+                                            <MudText Typo="Typo.body1" Style="font-weight: 700;">@center.Name</MudText>
+                                            <MudText Typo="Typo.caption">@center.Location</MudText>
+                                        </div>
+                                        <div class="text-right">
+                                            <MudText Typo="Typo.caption" Class="stat-label">Cap/Day</MudText>
+                                            <MudText Typo="Typo.body1">@center.CapacityPerDay</MudText>
+                                        </div>
+                                    </div>
+                                </MudItem>
+                            }
+                        </MudGrid>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+    </MudTabs>
+
+
+
+    </MudGrid>
+</MudContainer>
+
+<style>
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+    }
+    
+    body {
+        background-color: #f0f2f5;
+        background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                          radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+                          radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+        min-height: 100vh;
+    }
+
+    .stat-card {
+        padding: 5px;
+    }
+    .stat-label {
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+    .stat-value {
+        font-weight: 800;
+        letter-spacing: -1px;
+    }
+    .primary-text { color: #594ae2; }
+    .success-text { color: #00c853; }
+    .tertiary-text { color: #ff4081; }
+    .info-text { color: #2196f3; }
+
+    .pulse-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #2196f3;
+        border-radius: 50%;
+        display: inline-block;
+        animation: pulse 2s infinite;
+    }
+
+    .sustainability-panel {
+        border: 1px solid rgba(0, 200, 83, 0.3);
+        background: rgba(232, 245, 233, 0.4);
+    }
+
+    .restock-advisor-panel {
+        border: 1px solid rgba(89, 74, 226, 0.3);
+        background: rgba(232, 234, 246, 0.4);
+    }
+
+
+    @@keyframes pulse {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(33, 150, 243, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(33, 150, 243, 0); }
+    }
+</style>
+
+@code {
+
+    
+    private IEnumerable<ProductionBatch> batches = new List<ProductionBatch>();
+    private IEnumerable<Truck> trucks = new List<Truck>();
+    private IEnumerable<Shipment> shipments = new List<Shipment>();
+    private IEnumerable<RetailLocation> retailers = new List<RetailLocation>();
+    private IEnumerable<RecoveryCenter> recoveryCenters = new List<RecoveryCenter>();
+    
+    private ProductionBatch? selectedBatchForHierarchy;
+    private int TotalProducedToday;
+    private decimal TotalProfit;
+    private double YieldPercent = 98.4;
+    private double RecycleRate;
+    private double CarbonOffset;
+    private double MaterialRecoveredKg;
+    private List<PredictionModel> rackAdvisories = new();
+
+
+
+
+    protected override void OnInitialized()
+    {
+        if (!Disposed) RefreshData();
+    }
+
+    private void ViewHierarchy(ProductionBatch batch)
+    {
+        selectedBatchForHierarchy = batch;
+    }
+
+
+    private void RefreshData()
+    {
+        try
+        {
+            batches = FactoryService.GetAllBatches()?.OrderByDescending(b => b.CreatedAt) 
+                      ?? Enumerable.Empty<ProductionBatch>();
+            trucks = LogisticsService.GetAllTrucks() ?? Enumerable.Empty<Truck>();
+            shipments = LogisticsService.GetAllShipments() ?? Enumerable.Empty<Shipment>();
+            retailers = RetailService.GetAllLocations() ?? Enumerable.Empty<RetailLocation>();
+            recoveryCenters = SustainabilityService.GetAllCenters() ?? Enumerable.Empty<RecoveryCenter>();
+            
+            TotalProducedToday = FactoryService.GetTotalProducedToday();
+            TotalProfit = FactoryService.GetTotalProfit();
+            RecycleRate = FactoryService.GetRecycleRate();
+            CarbonOffset = FactoryService.GetCarbonOffset();
+            MaterialRecoveredKg = FactoryService.GetMaterialRecoveredKg();
+            
+            var allRacks = retailers
+                .SelectMany(r => FactoryService.GetRacksForRetail(r.Id) ?? Enumerable.Empty<RetailRack>())
+                .ToList();
+            rackAdvisories = PredictionService.GetRackAdvisory(allRacks);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[FactoryDashboard] RefreshData error: {ex.Message}");
+            // Ensure collections are never null so rendering doesn't cascade-fail
+            batches ??= Enumerable.Empty<ProductionBatch>();
+            trucks ??= Enumerable.Empty<Truck>();
+            shipments ??= Enumerable.Empty<Shipment>();
+            retailers ??= Enumerable.Empty<RetailLocation>();
+            recoveryCenters ??= Enumerable.Empty<RecoveryCenter>();
+            rackAdvisories ??= new List<PredictionModel>();
+        }
+        
+        SafeStateHasChanged();
+    }
+
+
+    private void SimulateSales()
+    {
+        var random = new Random();
+        var allRacks = retailers.SelectMany(r => FactoryService.GetRacksForRetail(r.Id)).ToList();
+        
+        foreach (var rack in allRacks)
+        {
+            int sales = random.Next(1, 15);
+            rack.CurrentUnits = Math.Max(0, rack.CurrentUnits - sales);
+            // In a real app we'd update DB, but for demo UI refresh is fine
+        }
+        
+        rackAdvisories = PredictionService.GetRackAdvisory(allRacks);
+        Snackbar.Add("Simulating retail sales... Inventory updating.", Severity.Info);
+        SafeStateHasChanged();
+    }
+
+
+
+
+
+
+    private async Task ExportCsv()
+    {
+        var bytes = ReportingService.GenerateProductionCsv();
+        await DownloadFile("production_report.csv", bytes);
+    }
+
+    private async Task ExportLedger()
+    {
+        var bytes = ReportingService.GenerateIndustrialLedgerCsv();
+        await DownloadFile("industrial_ledger_12layers.csv", bytes);
+        Snackbar.Add("12-Layer Industrial Ledger Exported.", Severity.Success);
+    }
+
+
+    private async Task ExportPdf()
+    {
+        var bytes = PdfReportService.GenerateProductionReport();
+        await DownloadFile("factory_production_summary.pdf", bytes);
+    }
+
+    private async Task DownloadManifest(int shipmentId)
+    {
+        var bytes = ManifestGenerator.GenerateManifest(shipmentId);
+        await DownloadFile($"Manifest_S{shipmentId}_{DateTime.Now:yyyyMMdd}.pdf", bytes);
+        Snackbar.Add("Logistics Manifest Exported.", Severity.Info);
+    }
+
+
+    private async Task DownloadFile(string fileName, byte[] bytes)
+    {
+        using var stream = new MemoryStream(bytes);
+        using var streamRef = new DotNetStreamReference(stream);
+        await JSRuntime.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+    }
+    
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo("/roles");
+    }
+}
+

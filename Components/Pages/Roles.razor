@@ -14,8 +14,9 @@
         <MudGrid Justify="Justify.Center" Spacing="6">
             <!-- Factory -->
             <MudItem xs="12" sm="6" md="4" lg="2">
-                <div class="role-card glass-panel" onclick="location.href='/login/factory'">
+                <div class="role-card glass-panel" onclick="location.href='/factory/dashboard'">
                     <div class="icon-wrapper factory-gradient mb-4">
+
                         <MudIcon Icon="@Icons.Material.Filled.Factory" Size="Size.Large" Class="role-icon" />
                     </div>
                     <MudText Typo="Typo.h6" Class="role-title mb-1">Factory</MudText>
@@ -76,6 +77,20 @@
                     </div>
                     <MudText Typo="Typo.h6" Class="role-title mb-1">Event</MudText>
                     <MudText Typo="Typo.caption" Class="role-desc mb-4">Weddings & Galas</MudText>
+                    <div class="action-arrow">
+                        <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" />
+                    </div>
+                </div>
+            </MudItem>
+
+            <!-- Global Traceability -->
+            <MudItem xs="12" sm="6" md="4" lg="2">
+                <div class="role-card glass-panel tracer-border" onclick="location.href='/trackcola'">
+                    <div class="icon-wrapper tracer-gradient mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.QrCodeScanner" Size="Size.Large" Class="role-icon" />
+                    </div>
+                    <MudText Typo="Typo.h6" Class="role-title mb-1">Tracer</MudText>
+                    <MudText Typo="Typo.caption" Class="role-desc mb-4">Universal QR Mesh</MudText>
                     <div class="action-arrow">
                         <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" />
                     </div>
@@ -160,6 +175,8 @@
     .wholesaler-gradient { background: linear-gradient(135deg, #1FA2FF, #12D8FA, #A6FFCB); color: #333 !important; }
     .retail-gradient { background: linear-gradient(135deg, #11998e, #38ef7d); }
     .event-gradient { background: linear-gradient(135deg, #8E2DE2, #4A00E0); }
+    .tracer-gradient { background: linear-gradient(135deg, #2c3e50, #000000); }
+    .tracer-border { border: 1px solid rgba(255, 255, 255, 0.4) !important; }
 
     .role-title {
         color: white;

@@ -1,0 +1,106 @@
+@using PackTrack.Models
+@using PackTrack.Services
+
+<MudPaper Class="pa-6 glass-panel" Elevation="2">
+    <MudText Typo="Typo.h6" Class="mb-4">Active Production Batches</MudText>
+    
+    <MudTable Items="@Batches" Dense="true" Hover="true" Bordered="false" Striped="true" Elevation="0" Class="transparent-table">
+        <HeaderContent>
+            <MudTh>Batch Code</MudTh>
+            <MudTh>Type</MudTh>
+            <MudTh>Qty (P/R)</MudTh>
+            <MudTh>Revenue</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh>Timestamp</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Batch Code">@context.BatchCode</MudTd>
+            <MudTd DataLabel="Type">
+                <MudChip T="string" Color="@GetColorForType(context.BottleType)" Size="Size.Small">@context.BottleType</MudChip>
+            </MudTd>
+            <MudTd DataLabel="Qty (P/R)">
+                <div class="d-flex flex-column">
+                    <MudText Typo="Typo.body2">Produced: @context.TotalProducedUnits</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Error">Rejected: @context.TotalRejectedUnits</MudText>
+                </div>
+            </MudTd>
+            <MudTd DataLabel="Revenue">
+                <MudText Typo="Typo.body2" Class="fw-bold">₹@((context.TotalProducedUnits - context.TotalRejectedUnits) * context.WholesaleRate)</MudText>
+            </MudTd>
+            <MudTd DataLabel="Status">
+                <MudChip T="string" Variant="Variant.Text" Color="@GetColorForStatus(context.Status)" Size="Size.Small">@context.Status</MudChip>
+            </MudTd>
+            <MudTd DataLabel="Timestamp">@context.CreatedAt.ToString("g")</MudTd>
+
+            <MudTd DataLabel="Actions">
+                <div class="d-flex gap-1">
+                    <MudIconButton Icon="@Icons.Material.Filled.AccountTree" Color="Color.Primary" Size="Size.Small" OnClick="@(() => OnViewHierarchy.InvokeAsync(context))" />
+                    
+                    @if (context.Status == "Produced")
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.LocalShipping" Color="Color.Info" Size="Size.Small" OnClick="@(() => UpdateStatus(context.Id, "InTransit"))" />
+                    }
+                    else if (context.Status == "InTransit")
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" OnClick="@(() => UpdateStatus(context.Id, "Delivered"))" />
+                    }
+                </div>
+            </MudTd>
+
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+</MudPaper>
+
+@code {
+    [Inject] FactoryService FactoryService { get; set; } = default!;
+    [Inject] ISnackbar Snackbar { get; set; } = default!;
+    [Parameter] public IEnumerable<ProductionBatch> Batches { get; set; } = new List<ProductionBatch>();
+    [Parameter] public EventCallback<ProductionBatch> OnViewHierarchy { get; set; }
+    [Parameter] public EventCallback OnStatusUpdated { get; set; }
+
+    private void UpdateStatus(int id, string status)
+    {
+        try
+        {
+            FactoryService.UpdateBatchStatus(id, status);
+            Snackbar.Add($"Batch status updated to {status}.", Severity.Info);
+            OnStatusUpdated.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error updating status: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private Color GetColorForType(string type) => type switch
+    {
+        "Thick" => Color.Primary,
+        "Thin" => Color.Secondary,
+        "rPET" => Color.Tertiary,
+        _ => Color.Default
+    };
+
+    private Color GetColorForStatus(string status) => status switch
+    {
+        "Produced" => Color.Warning,
+        "InTransit" => Color.Info,
+        "Delivered" => Color.Success,
+        _ => Color.Default
+    };
+}
+
+<style>
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 12px;
+    }
+    .transparent-table {
+        background: transparent !important;
+    }
+</style>

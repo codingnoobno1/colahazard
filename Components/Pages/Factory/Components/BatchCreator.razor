@@ -1,0 +1,126 @@
+@using PackTrack.Services
+
+<MudPaper Class="pa-6 glass-panel" Elevation="2">
+    <MudText Typo="Typo.h6" Class="mb-4">Quick Batch Production</MudText>
+    
+    <MudGrid Spacing="2">
+        <MudItem xs="6">
+            <MudSelect T="int" @bind-Value="plantId" Label="Manufacturing Plant" AnchorOrigin="Origin.BottomCenter" Variant="Variant.Outlined">
+                @foreach (var p in FactoryService.GetAllPlants())
+                {
+                    <MudSelectItem Value="@p.PlantId">@p.Name (@p.PlantCode)</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="6">
+            <MudSelect T="string" Label="Liquid Type" @bind-Value="liquidType" AnchorOrigin="Origin.BottomCenter" Variant="Variant.Outlined">
+                <MudSelectItem Value="@("Classic Cola")">Classic Cola</MudSelectItem>
+                <MudSelectItem Value="@("Zero Sugar")">Zero Sugar</MudSelectItem>
+                <MudSelectItem Value="@("Diet Cola")">Diet Cola</MudSelectItem>
+                <MudSelectItem Value="@("Orange Burst")">Orange Burst</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="4">
+            <MudSelect T="string" Label="Container" @bind-Value="containerType" AnchorOrigin="Origin.BottomCenter" Variant="Variant.Outlined">
+                <MudSelectItem Value="@("Bottle")">Bottle</MudSelectItem>
+                <MudSelectItem Value="@("Can")">Aluminum Can</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="4">
+            <MudSelect T="string" Label="Material Type" @bind-Value="selectedType" AnchorOrigin="Origin.BottomCenter" Variant="Variant.Outlined">
+                @if (containerType == "Bottle")
+                {
+                    <MudSelectItem Value="@("Thick")">Thick Plastic</MudSelectItem>
+                    <MudSelectItem Value="@("Thin")">Thin Plastic</MudSelectItem>
+                    <MudSelectItem Value="@("rPET")">Recycled PET (rPET)</MudSelectItem>
+                }
+                else
+                {
+                    <MudSelectItem Value="@("Standard")">Standard Aluminum</MudSelectItem>
+                    <MudSelectItem Value="@("Sleek")">Sleek Designer</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="4">
+            <MudNumericField @bind-Value="quantity" Label="Quantity (Units)" Variant="Variant.Outlined" Min="100" Max="50000" Step="100" />
+        </MudItem>
+
+        <MudItem xs="12" Class="d-flex justify-space-between align-center mt-2">
+            <MudSwitch @bind-Value="isAdvanced" Label="Advanced Precision Control" Color="Color.Primary" Size="Size.Small" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PrecisionManufacturing" OnClick="ProduceBatch" Disabled="string.IsNullOrEmpty(selectedType)">
+                Launch Production
+            </MudButton>
+        </MudItem>
+
+        @if (isAdvanced)
+        {
+            <MudItem xs="12">
+                <MudDivider Class="my-2" />
+                <MudText Typo="Typo.caption" Class="mb-2 d-block">CHEMISTRY PRECISION OVERRIDES</MudText>
+                <MudGrid Spacing="1">
+                    <MudItem xs="4">
+                        <MudSlider @bind-Value="brix" Min="8" Max="14" Step="0.1" Color="Color.Primary">Brix: @brix</MudSlider>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudSlider @bind-Value="ph" Min="2.0" Max="3.5" Step="0.01" Color="Color.Secondary">pH: @ph</MudSlider>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudSlider @bind-Value="co2" Min="2.5" Max="4.5" Step="0.1" Color="Color.Tertiary">CO2: @co2</MudSlider>
+                    </MudItem>
+                </MudGrid>
+            </MudItem>
+        }
+    </MudGrid>
+
+
+</MudPaper>
+
+@code {
+    [Inject] FactoryService FactoryService { get; set; } = default!;
+    [Inject] ISnackbar Snackbar { get; set; } = default!;
+    [Parameter] public EventCallback OnBatchProduced { get; set; }
+
+    private string selectedType = "Thick";
+    private string containerType = "Bottle";
+    private int plantId = 1;
+    private string liquidType = "Classic Cola";
+    private int quantity = 1000;
+    private bool isAdvanced = false;
+
+
+    // Advanced Chemistry
+    private double brix = 11.2;
+    private double ph = 2.52;
+    private double co2 = 3.8;
+
+    private async Task ProduceBatch()
+    {
+        try
+        {
+            if (isAdvanced)
+                FactoryService.ProduceBatch(selectedType, quantity, containerType, plantId, liquidType, brix, ph, co2);
+            else
+                FactoryService.ProduceBatch(selectedType, quantity, containerType, plantId, liquidType);
+
+
+            Snackbar.Add($"Industrial {containerType} Batch Initiated: {quantity} units.", Severity.Success);
+
+
+            await OnBatchProduced.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error producing batch: {ex.Message}", Severity.Error);
+        }
+    }
+}
+
+
+<style>
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 12px;
+    }
+</style>

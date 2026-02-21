@@ -59,7 +59,39 @@ namespace PackTrack.Services
 
             return predictions;
         }
+
+        public List<PredictionModel> GetRackAdvisory(IEnumerable<RetailRack> racks)
+        {
+            var advisories = new List<PredictionModel>();
+            foreach (var rack in racks)
+            {
+                double percentage = (double)rack.CurrentUnits / rack.CapacityUnits * 100;
+                
+                if (percentage < 20)
+                {
+                    advisories.Add(new PredictionModel
+                    {
+                        BottleType = $"{rack.RackCode} ({rack.BottleTypeAssigned})",
+                        PredictedDemand = "CRITICAL",
+                        SuggestedReorder = rack.CapacityUnits - rack.CurrentUnits,
+                        Reason = "Stock depleted below 20%"
+                    });
+                }
+                else if (percentage < 50)
+                {
+                    advisories.Add(new PredictionModel
+                    {
+                        BottleType = $"{rack.RackCode} ({rack.BottleTypeAssigned})",
+                        PredictedDemand = "REFILL",
+                        SuggestedReorder = (int)((rack.CapacityUnits - rack.CurrentUnits) * 0.8),
+                        Reason = "Optimizing shelf space"
+                    });
+                }
+            }
+            return advisories;
+        }
     }
+
 
     public class PredictionModel
     {

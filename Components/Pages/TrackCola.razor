@@ -1,0 +1,518 @@
+@page "/trackcola"
+@using PackTrack.Models
+@using PackTrack.Services
+@using PackTrack.Data
+@layout PackTrack.Components.Layout.LandingLayout
+@inject LiteDbContext Db
+@inject NavigationManager NavigationManager
+@inherits SafeComponent
+
+
+
+<PageTitle>EcoCola Traceability Mesh - Tracker</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-12">
+    <MudGrid Justify="Justify.Center">
+        <MudItem xs="12" md="8">
+            <div class="tracker-header text-center mb-10">
+                <MudIcon Icon="@Icons.Material.Filled.QrCodeScanner" Size="Size.Large" Color="Color.Primary" Class="mb-4" Style="font-size: 4rem;" />
+                <MudText Typo="Typo.h3" Style="font-weight: 800; letter-spacing: -1px;">Universal Traceability Mesh</MudText>
+                <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Enter any Batch, Pallet, Carton, or Bottle QR code to reveal industrial metadata.</MudText>
+            </div>
+
+            <MudPaper Class="pa-6 glass-panel mb-8 search-area" Elevation="0">
+                <div class="d-flex gap-4 align-center">
+                    <MudTextField @bind-Value="searchQuery" Label="Scan or Enter QR Code" Variant="Variant.Outlined" 
+                                  Placeholder="e.g. B-2024..., P-..., C-..., ECO-..." 
+                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                                  OnKeyDown="@HandleKeyDown" Immediate="true" />
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" OnClick="PerformSearch" Style="height: 56px; min-width: 120px;">
+                        Trace
+                    </MudButton>
+                </div>
+            </MudPaper>
+
+            @if (isLoading)
+            {
+                <div class="d-flex justify-center py-10">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                </div>
+            }
+            else if (foundEntity != null)
+            {
+                <div class="fade-in">
+                    <MudPaper Class="pa-8 glass-panel result-card" Elevation="0">
+                        <div class="d-flex justify-space-between align-start mb-6">
+                            <div>
+                                <MudChip T="string" Color="@GetHeaderColor(entityType)" Variant="Variant.Filled" Size="Size.Small" Class="mb-2">@entityType IDENTIFIED</MudChip>
+                                <MudText Typo="Typo.h4" Style="font-weight: 700;">@searchQuery</MudText>
+                            </div>
+                            <MudIcon Icon="@GetEntityIcon(entityType)" Size="Size.Large" Color="@GetHeaderColor(entityType)" Style="font-size: 3rem; opacity: 0.5;" />
+                        </div>
+
+                        <MudDivider Class="mb-6" />
+
+                        <MudGrid>
+                            @if (entityType == "Bottle")
+                            {
+                                var b = (BottleUnit)foundEntity;
+                                <MudItem xs="12" sm="6">
+                                    <div class="detail-item">
+                                        <MudText Typo="Typo.caption" Class="label">INDUSTRIAL SPECS</MudText>
+                                        <div class="spec-grid">
+                                            <div class="spec"><span>pH:</span> <span class="val">@b.pHValue.ToString("F2")</span></div>
+                                            <div class="spec"><span>Brix:</span> <span class="val">@b.BrixLevel.ToString("F1")°Bx</span></div>
+                                            <div class="spec"><span>Carbonation:</span> <span class="val">@b.CarbonationLevel.ToString("F2") v/v</span></div>
+                                            <div class="spec"><span>CO2 Vol:</span> <span class="val">@b.CO2Volumes.ToString("F2") vol</span></div>
+                                            <div class="spec"><span>Pressure:</span> <span class="val">@b.PressureAtSeal.ToString("F2") bar</span></div>
+                                            <div class="spec"><span>Fill Temp:</span> <span class="val">@b.FillTemperature.ToString("F1") °C</span></div>
+                                        </div>
+                                    </div>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <div class="detail-item">
+                                        <MudText Typo="Typo.caption" Class="label">LOGISTICS & PACKAGING</MudText>
+                                        <div class="ancestry-item">Container: <span class="val-text">@b.ContainerType</span></div>
+                                        <div class="ancestry-item">Volume: <span class="val-text">@b.CapacityML ml</span></div>
+                                        <div class="ancestry-item">Shelf Life: <span class="@(b.IsExpired ? "text-danger" : "text-success")">@(b.IsExpired ? "EXPIRED" : "GOOD")</span> (Exp: @b.ExpiryDate.ToShortDateString())</div>
+                                        
+                                        <div class="mt-3">
+                                            <MudText Typo="Typo.caption" Class="label">FRESHNESS METER</MudText>
+                                            <MudProgressLinear Color="@(b.IsExpired ? Color.Error : Color.Success)" Value="@GetFreshnessValue(b)" Size="Size.Small" Class="mt-1" />
+                                            <MudText Typo="Typo.caption" Class="d-block mt-1">@GetFreshnessText(b)</MudText>
+                                        </div>
+                                    </div>
+                                </MudItem>
+
+
+                                <MudItem xs="12">
+                                     <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-4">
+                                         Current Status: <strong>@b.CurrentStatus</strong> at <strong>@b.CurrentLocationType</strong> (@b.CurrentLocationId)
+                                     </MudAlert>
+
+                                     @if (b.CurrentStatus != "Recycled")
+                                     {
+                                         <div class="d-flex justify-center mt-4">
+                                             <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Loop" OnClick="@(() => RecycleBottle(b.BottleId))">
+                                                 Recycle Now (Sustainability Event)
+                                             </MudButton>
+                                         </div>
+                                     }
+                                </MudItem>
+
+                            }
+                            else if (entityType == "Batch")
+                            {
+                                var bt = (ProductionBatch)foundEntity;
+                                <MudItem xs="6" sm="3">
+                                    <MudText Typo="Typo.caption" Class="label">BOTTLE TYPE</MudText>
+                                    <MudText Typo="Typo.body1">@bt.BottleType (@bt.BottleMaterialGrade)</MudText>
+                                </MudItem>
+                                <MudItem xs="6" sm="3">
+                                    <MudText Typo="Typo.caption" Class="label">LIQUID</MudText>
+                                    <MudText Typo="Typo.body1">@bt.LiquidType</MudText>
+                                </MudItem>
+                                <MudItem xs="6" sm="3">
+                                    <MudText Typo="Typo.caption" Class="label">PLANNED</MudText>
+                                    <MudText Typo="Typo.body1">@bt.TotalPlannedUnits</MudText>
+                                </MudItem>
+                                <MudItem xs="6" sm="3">
+                                    <MudText Typo="Typo.caption" Class="label">REJECTS</MudText>
+                                    <MudText Typo="Typo.body1" Color="Color.Error">@bt.TotalRejectedUnits</MudText>
+                                </MudItem>
+                                <MudItem xs="6" sm="3">
+                                    <MudText Typo="Typo.caption" Class="label">CONTAINER</MudText>
+                                    <MudText Typo="Typo.body1">@bt.ContainerType (@bt.CapacityML ml)</MudText>
+                                </MudItem>
+
+                                <MudItem xs="6" sm="3">
+                                    <MudText Typo="Typo.caption" Class="label">SHELF LIFE</MudText>
+                                    <MudText Typo="Typo.body1">@bt.DaysToExpiry Days left</MudText>
+                                </MudItem>
+                                <MudItem xs="12">
+                                     <MudExpansionPanels Elevation="0" Class="mt-4">
+                                         <MudExpansionPanel Text="Deep Chemistry Technical Spec" MaxHeight="1000">
+                                             <div class="d-flex gap-8">
+                                                 <div><MudText Typo="Typo.caption">BRIX (SUGAR)</MudText><MudText Typo="Typo.h6">@bt.BrixLevel.ToString("F1")°Bx</MudText></div>
+                                                 <div><MudText Typo="Typo.caption">TARGET PH</MudText><MudText Typo="Typo.h6">@bt.AcidityPH.ToString("F2")</MudText></div>
+                                                 <div><MudText Typo="Typo.caption">CO2 VOLUMES</MudText><MudText Typo="Typo.h6">@bt.CO2Volumes.ToString("F1") vol</MudText></div>
+                                             </div>
+                                             <MudText Typo="Typo.caption" Class="mt-4 d-block">ACTIVE INGREDIENTS</MudText>
+                                             <MudText Typo="Typo.body2">@bt.IngredientsList</MudText>
+                                         </MudExpansionPanel>
+                                     </MudExpansionPanels>
+                                </MudItem>
+
+                                <MudItem xs="12">
+                                    <MudText Typo="Typo.caption" Class="label mt-4 d-block">CONTAINED PALLETS</MudText>
+                                    <div class="d-flex flex-wrap gap-2 mt-2">
+                                        @foreach (var pCode in childCodes)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Tertiary" OnClick="@(() => NavigateToCode(pCode))">@pCode</MudChip>
+                                        }
+                                    </div>
+                                </MudItem>
+                            }
+                            else if (entityType == "Pallet")
+                            {
+                                var p = (Pallet)foundEntity;
+                                <MudItem xs="6">
+                                    <MudText Typo="Typo.caption" Class="label">INDUSTRIAL MESH</MudText>
+                                    <MudText Typo="Typo.h5">@p.TotalUnits Units | @p.CartonCount Packs</MudText>
+                                </MudItem>
+                                <MudItem xs="6">
+                                    <MudText Typo="Typo.caption" Class="label">WEIGHT METRICS</MudText>
+                                    <MudText Typo="Typo.h5">Gross: @p.GrossWeight.ToString("F1") kg</MudText>
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudText Typo="Typo.caption" Class="label mt-4 d-block">CONTAINED CARTONS</MudText>
+                                    <div class="d-flex flex-wrap gap-2 mt-2">
+                                        @foreach (var cCode in childCodes)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning" OnClick="@(() => NavigateToCode(cCode))">@cCode</MudChip>
+                                        }
+                                    </div>
+                                </MudItem>
+                            }
+                            else if (entityType == "Carton")
+                            {
+                                var c = (Carton)foundEntity;
+                                <MudItem xs="6">
+                                    <MudText Typo="Typo.caption" Class="label">PACK CONFIG</MudText>
+                                    <MudText Typo="Typo.h5">@c.UnitsPerCarton units/pack</MudText>
+                                </MudItem>
+                                <MudItem xs="6">
+                                    <MudText Typo="Typo.caption" Class="label">LOGISTICS STATUS</MudText>
+                                    <MudText Typo="Typo.h5">@c.Status</MudText>
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudText Typo="Typo.caption" Class="label mt-4 d-block">CONTAINED BOTTLES</MudText>
+                                    <div class="d-flex flex-wrap gap-1 mt-2">
+                                        @foreach (var bCode in childCodes)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" OnClick="@(() => NavigateToCode(bCode))">@bCode</MudChip>
+                                        }
+                                    </div>
+                                </MudItem>
+                            }
+                            else if (entityType == "Plant")
+                            {
+                                var pl = (Plant)foundEntity;
+                                <MudItem xs="6">
+                                    <MudText Typo="Typo.caption" Class="label">LOCATION</MudText>
+                                    <MudText Typo="Typo.h5">@pl.Location, @pl.Country</MudText>
+                                </MudItem>
+                                <MudItem xs="6">
+                                    <MudText Typo="Typo.caption" Class="label">SYSTEM STATUS</MudText>
+                                    <MudChip T="string" Color="Color.Success" Size="Size.Small">@(pl.IsActive ? "ONLINE" : "OFFLINE")</MudChip>
+                                </MudItem>
+                            }
+                            else if (entityType == "Shipment")
+                            {
+                                var sh = (Shipment)foundEntity;
+                                <MudItem xs="6">
+                                    <MudText Typo="Typo.caption" Class="label">DRIVER / TRUCK</MudText>
+                                    <MudText Typo="Typo.h5">@sh.DriverId | @sh.TruckId</MudText>
+                                </MudItem>
+                                <MudItem xs="6">
+                                    <MudText Typo="Typo.caption" Class="label">LIVE TELEMETRY</MudText>
+                                    <div class="d-flex gap-2">
+                                        <MudChip T="string" Icon="@Icons.Material.Filled.WaterDrop" Size="Size.Small" Color="Color.Info">Active IoT</MudChip>
+                                        <MudChip T="string" Icon="@Icons.Material.Filled.Speed" Size="Size.Small" Color="Color.Warning">GPS-Link</MudChip>
+                                    </div>
+                                </MudItem>
+                            }
+
+
+                        </MudGrid>
+                        
+                        <div class="d-flex justify-end mt-8">
+                             <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.History" Color="Color.Primary" OnClick="ToggleHistory">
+                                 @(showHistory ? "Hide Journey Log" : "View Full Journey Log")
+                             </MudButton>
+                        </div>
+
+                        @if (showHistory && entityType == "Bottle")
+                        {
+                            <div class="mt-4 fade-in">
+                                <MudText Typo="Typo.h6" Class="mb-3">Movement History</MudText>
+                                <MudTimeline TimelinePosition="TimelinePosition.Start">
+                                    @foreach (var move in movements)
+                                    {
+                                        <MudTimelineItem Color="@GetMoveColor(move.EventType)" Size="Size.Small">
+                                            <ItemDot>
+                                                <MudIcon Icon="@GetMoveIcon(move.EventType)" Size="Size.Small" />
+                                            </ItemDot>
+                                            <ItemContent>
+                                                <MudText Typo="Typo.body2" Style="font-weight: 700;">@move.EventType</MudText>
+                                                <MudText Typo="Typo.caption">To: @move.ToLocationType (@move.ToLocationId) | @move.Timestamp.ToString("g")</MudText>
+                                            </ItemContent>
+                                        </MudTimelineItem>
+                                    }
+                                </MudTimeline>
+                            </div>
+                        }
+                    </MudPaper>
+                </div>
+            }
+            else if (!string.IsNullOrEmpty(lastSearch) && !isLoading)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="fade-in">No entity found for code: @lastSearch</MudAlert>
+            }
+
+            <div class="mt-12 d-flex justify-center">
+                <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Color="Color.Secondary" OnClick="@(() => NavigationManager.NavigateTo("/roles"))">Return to Roles</MudButton>
+            </div>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<style>
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.06);
+    }
+    
+    .search-area {
+        transition: transform 0.3s ease;
+    }
+    .search-area:focus-within {
+        transform: translateY(-5px);
+    }
+    
+    .label {
+        font-weight: 700;
+        color: #64748b;
+        letter-spacing: 1px;
+    }
+    
+    .spec-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 8px;
+    }
+    .spec { font-size: 0.9rem; color: #475569; }
+    .spec .val { font-weight: 700; color: #1e293b; }
+    
+    .ancestry-item {
+        margin-top: 4px;
+        font-size: 0.9rem;
+    }
+    .ancestry-item .code { font-family: monospace; font-weight: 600; color: #594ae2; }
+    .ancestry-item .val-text { font-weight: 700; color: #1e293b; }
+
+    
+    .fade-in {
+        animation: fadeIn 0.4s ease-out forwards;
+    }
+    
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    body {
+        background-color: #f8fafc;
+        background-image: radial-gradient(at 100% 0%, hsla(210,100%,96%,1) 0, transparent 50%), 
+                          radial-gradient(at 0% 100%, hsla(255,100%,96%,1) 0, transparent 50%);
+        min-height: 100vh;
+    }
+</style>
+
+@code {
+    private string searchQuery = "";
+
+
+    private string lastSearch = "";
+    private bool isLoading = false;
+    private object? foundEntity = null;
+    private string entityType = "";
+    private bool showHistory = false;
+    private List<BottleMovement> movements = new();
+    private List<string> childCodes = new();
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await PerformSearch();
+        }
+    }
+
+    private async Task NavigateToCode(string code)
+    {
+        searchQuery = code;
+        await PerformSearch();
+    }
+
+
+
+    private void ToggleHistory()
+    {
+        showHistory = !showHistory;
+        if (showHistory && entityType == "Bottle")
+        {
+            movements = Db.BottleMovements.Find(x => x.BottleId == lastSearch).OrderByDescending(x => x.Timestamp).ToList();
+        }
+    }
+
+    private async Task RecycleBottle(string bottleId)
+    {
+        var bottle = Db.Bottles.FindById(bottleId);
+        if (bottle != null)
+        {
+            bottle.CurrentStatus = "Recycled";
+            bottle.CurrentLocationType = "RecoveryCenter";
+            bottle.RecycleCycleCount++;
+            Db.Bottles.Update(bottle);
+
+            // Log Recycling Event
+            var recycleEvent = new RecyclingEvent
+            {
+                BottleId = bottleId,
+                CenterId = 1, // Mock Center
+                ReturnedAt = DateTime.Now,
+                CarbonSavedGrams = 5.0, // Avg savings
+                Status = "Recycled"
+            };
+            Db.RecyclingEvents.Insert(recycleEvent);
+
+            // Log Movement
+            Db.BottleMovements.Insert(new BottleMovement 
+            { 
+                BottleId = bottleId, 
+                EventType = "Recycled",
+                ToLocationType = "RecoveryCenter",
+                Timestamp = DateTime.Now
+            });
+
+            await PerformSearch(); // Refresh
+        }
+    }
+
+    private double GetFreshnessValue(BottleUnit b)
+    {
+        var totalDays = (b.ExpiryDate - b.ManufactureDate).TotalDays;
+        var daysLeft = (b.ExpiryDate - DateTime.Now).TotalDays;
+        if (daysLeft <= 0) return 0;
+        return (daysLeft / totalDays) * 100;
+    }
+
+    private string GetFreshnessText(BottleUnit b)
+    {
+        var daysLeft = (b.ExpiryDate - DateTime.Now).TotalDays;
+        if (daysLeft <= 0) return "Out of Freshness Window";
+        return $"{(int)daysLeft} Days of Peak Freshness Remaining";
+    }
+
+    private async Task PerformSearch()
+
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery)) return;
+
+        isLoading = true;
+        foundEntity = null;
+        lastSearch = searchQuery;
+        showHistory = false;
+        SafeStateHasChanged();
+
+        await Task.Delay(600); // Simulate network/db latency for cinematic feel
+        if (Disposed) return;
+
+
+
+        var registry = Db.QrRegistry.FindOne(x => x.QrId == searchQuery);
+        
+        if (registry != null)
+        {
+            entityType = registry.EntityType;
+            childCodes.Clear();
+            switch (entityType)
+            {
+                case "Batch":
+                    var batchId = int.Parse(registry.EntityId);
+                    foundEntity = Db.ProductionBatches.FindById(batchId);
+                    childCodes = Db.Pallets.Find(x => x.BatchId == batchId).Select(x => x.PalletCode).ToList();
+                    break;
+                case "Pallet":
+                    var palletId = int.Parse(registry.EntityId);
+                    foundEntity = Db.Pallets.FindById(palletId);
+                    childCodes = Db.Cartons.Find(x => x.PalletId == palletId).Select(x => x.CartonCode).ToList();
+                    break;
+                case "Carton":
+                    var cartonId = int.Parse(registry.EntityId);
+                    foundEntity = Db.Cartons.FindById(cartonId);
+                    childCodes = Db.Bottles.Find(x => x.CartonId == cartonId).Select(x => x.BottleId).ToList();
+                    break;
+                case "Bottle":
+                    foundEntity = Db.Bottles.FindById(registry.EntityId);
+                    break;
+                case "Plant":
+                    foundEntity = Db.Plants.FindById(int.Parse(registry.EntityId));
+                    break;
+                case "Shipment":
+                    foundEntity = Db.Shipments.FindById(int.Parse(registry.EntityId));
+                    break;
+                case "Truck":
+                    foundEntity = Db.Trucks.FindById(registry.EntityId);
+                    break;
+                case "Retail":
+                    foundEntity = Db.RetailLocations.FindById(int.Parse(registry.EntityId));
+                    break;
+            }
+        }
+
+
+
+        isLoading = false;
+        SafeStateHasChanged();
+    }
+
+
+    private Color GetHeaderColor(string type) => type switch
+    {
+        "Batch" => Color.Primary,
+        "Pallet" => Color.Tertiary,
+        "Carton" => Color.Warning,
+        "Bottle" => Color.Info,
+        _ => Color.Default
+    };
+
+    private string GetEntityIcon(string type) => type switch
+    {
+        "Batch" => Icons.Material.Filled.Factory,
+        "Pallet" => Icons.Material.Filled.Inventory,
+        "Carton" => Icons.Material.Filled.Inbox,
+        "Bottle" => Icons.Material.Filled.LocalActivity,
+        "Plant" => Icons.Material.Filled.LocationCity,
+        "Shipment" => Icons.Material.Filled.LocalShipping,
+        "Truck" => Icons.Material.Filled.LocalShipping,
+        "Retail" => Icons.Material.Filled.Store,
+
+        _ => Icons.Material.Filled.Help
+    };
+
+
+    private Color GetMoveColor(string type) => type switch
+    {
+        "Produced" => Color.Success,
+        "Shipped" => Color.Info,
+        "Retail" => Color.Warning,
+        "Recycled" => Color.Secondary,
+        _ => Color.Default
+    };
+
+    private string GetMoveIcon(string type) => type switch
+    {
+        "Produced" => Icons.Material.Filled.Build,
+        "Shipped" => Icons.Material.Filled.LocalShipping,
+        "Retail" => Icons.Material.Filled.Storefront,
+        "Recycled" => Icons.Material.Filled.Loop,
+        _ => Icons.Material.Filled.Circle
+    };
+}
